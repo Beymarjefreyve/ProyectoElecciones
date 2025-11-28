@@ -37,6 +37,8 @@ public class EleccionService {
     // CREAR ELECCIÓN
     // ========================================================
     public EleccionResponseDTO crear(EleccionRequestDTO dto) {
+        // Validar fechas
+        validarFechas(dto.getFechaInicio(), dto.getFechaFinaliza());
 
         Eleccion e = new Eleccion();
 
@@ -125,27 +127,219 @@ public class EleccionService {
     }
 
     // ========================================================
-    // CAMBIAR ESTADO (ACTIVAR / CERRAR)
+    // ACTUALIZAR ELECCIÓN
     // ========================================================
- // ========================================================
- // CAMBIAR ESTADO DE LA ELECCIÓN
- // ========================================================
- public EleccionResponseDTO cambiarEstado(Long id, String nuevoEstado) {
+    public EleccionResponseDTO actualizar(Long id, EleccionRequestDTO dto) {
+        Eleccion e = buscarPorIdEntity(id);
+        
+        // Validar fechas
+        validarFechas(dto.getFechaInicio(), dto.getFechaFinaliza());
 
-     Eleccion e = repo.findById(id)
-             .orElseThrow(() -> new RuntimeException("Elección no encontrada"));
+        // FK obligatorias
+        e.setTipoEleccion(
+                tipoEleccionRepo.findById(dto.getTipoEleccionId())
+                        .orElseThrow(() -> new RuntimeException("Tipo de elección no existe"))
+        );
 
-     // Validar valores permitidos
-     if (!nuevoEstado.equalsIgnoreCase("ABIERTO")
-             && !nuevoEstado.equalsIgnoreCase("CERRADO")) {
-         throw new RuntimeException("Estado inválido. Debe ser ABIERTO o CERRADO");
-     }
+        e.setTipo(
+                tipoRepo.findById(dto.getTipoId())
+                        .orElseThrow(() -> new RuntimeException("Tipo no existe"))
+        );
 
-     e.setEstado(nuevoEstado.toUpperCase());
+        e.setProceso(
+                procesoRepo.findById(dto.getProcesoId())
+                        .orElseThrow(() -> new RuntimeException("Proceso no existe"))
+        );
 
-     Eleccion saved = repo.save(e);
-     return buildDTO(saved);
- }
+        // FK opcionales
+        if (dto.getProgramaId() != null) {
+            e.setPrograma(
+                    programaRepo.findById(dto.getProgramaId())
+                            .orElseThrow(() -> new RuntimeException("Programa no existe"))
+            );
+        } else {
+            e.setPrograma(null);
+        }
+
+        if (dto.getSedeId() != null) {
+            e.setSede(
+                    sedeRepo.findById(dto.getSedeId())
+                            .orElseThrow(() -> new RuntimeException("Sede no existe"))
+            );
+        } else {
+            e.setSede(null);
+        }
+
+        if (dto.getFacultadId() != null) {
+            e.setFacultad(
+                    facultadRepo.findById(dto.getFacultadId())
+                            .orElseThrow(() -> new RuntimeException("Facultad no existe"))
+            );
+        } else {
+            e.setFacultad(null);
+        }
+
+        // Campos simples
+        e.setNombre(dto.getNombre());
+        e.setDescripcion(dto.getDescripcion());
+        e.setAnio(dto.getAnio());
+        e.setSemestre(dto.getSemestre());
+        e.setFechaInicio(dto.getFechaInicio());
+        e.setFechaFinaliza(dto.getFechaFinaliza());
+
+        Eleccion updated = repo.save(e);
+        return buildDTO(updated);
+    }
+
+    // ========================================================
+    // ELIMINAR/DESACTIVAR ELECCIÓN
+    // ========================================================
+    public void eliminar(Long id) {
+        Eleccion e = buscarPorIdEntity(id);
+        // En lugar de eliminar físicamente, desactivamos
+        e.setEstado("CERRADO");
+        repo.save(e);
+    }
+
+    // ========================================================
+    // CAMBIAR ESTADO DE LA ELECCIÓN
+    // ========================================================
+    public EleccionResponseDTO cambiarEstado(Long id, String nuevoEstado) {
+        Eleccion e = buscarPorIdEntity(id);
+
+        // Validar valores permitidos
+        if (!nuevoEstado.equalsIgnoreCase("ACTIVA")
+                && !nuevoEstado.equalsIgnoreCase("ABIERTO")
+                && !nuevoEstado.equalsIgnoreCase("CERRADO")) {
+            throw new RuntimeException("Estado inválido. Debe ser ACTIVA, ABIERTO o CERRADO");
+        }
+
+        e.setEstado(nuevoEstado.toUpperCase());
+
+        Eleccion saved = repo.save(e);
+        return buildDTO(saved);
+    }
+
+    // ========================================================
+    // FILTRAR POR ESTADO
+    // ========================================================
+    public List<EleccionResponseDTO> filtrarPorEstado(String estado) {
+        return repo.findByEstado(estado.toUpperCase())
+                .stream()
+                .map(this::buildDTO)
+                .collect(Collectors.toList());
+    }
+
+    // ========================================================
+    // FILTRAR POR PROCESO
+    // ========================================================
+    public List<EleccionResponseDTO> filtrarPorProceso(Long procesoId) {
+        procesoRepo.findById(procesoId)
+                .orElseThrow(() -> new RuntimeException("Proceso no encontrado"));
+        
+        return repo.findByProcesoId(procesoId)
+                .stream()
+                .map(this::buildDTO)
+                .collect(Collectors.toList());
+    }
+
+    // ========================================================
+    // FILTRAR POR TIPO DE ELECCIÓN
+    // ========================================================
+    public List<EleccionResponseDTO> filtrarPorTipoEleccion(Long tipoEleccionId) {
+        tipoEleccionRepo.findById(tipoEleccionId)
+                .orElseThrow(() -> new RuntimeException("Tipo de elección no encontrado"));
+        
+        return repo.findByTipoEleccionId(tipoEleccionId)
+                .stream()
+                .map(this::buildDTO)
+                .collect(Collectors.toList());
+    }
+
+    // ========================================================
+    // VALIDAR FECHAS (inicio < fin)
+    // ========================================================
+    public void validarFechas(LocalDateTime fechaInicio, LocalDateTime fechaFinaliza) {
+        if (fechaInicio == null || fechaFinaliza == null) {
+            throw new RuntimeException("Las fechas de inicio y fin son obligatorias");
+        }
+        
+        if (!fechaInicio.isBefore(fechaFinaliza)) {
+            throw new RuntimeException("La fecha de inicio debe ser anterior a la fecha de finalización");
+        }
+    }
+
+    // ========================================================
+    // EXTENDER FECHA DE ELECCIÓN
+    // ========================================================
+    public EleccionResponseDTO extenderFecha(Long id, LocalDateTime nuevaFechaFinaliza) {
+        Eleccion e = buscarPorIdEntity(id);
+        
+        // Validar que la nueva fecha sea posterior a la fecha actual de finalización
+        if (!nuevaFechaFinaliza.isAfter(e.getFechaFinaliza())) {
+            throw new RuntimeException("La nueva fecha de finalización debe ser posterior a la fecha actual");
+        }
+        
+        // Validar que la nueva fecha sea posterior a la fecha de inicio
+        if (!nuevaFechaFinaliza.isAfter(e.getFechaInicio())) {
+            throw new RuntimeException("La nueva fecha de finalización debe ser posterior a la fecha de inicio");
+        }
+        
+        e.setFechaFinaliza(nuevaFechaFinaliza);
+        e.setExtendido(true);
+        
+        Eleccion updated = repo.save(e);
+        return buildDTO(updated);
+    }
+
+    // ========================================================
+    // VALIDAR QUE LA ELECCIÓN ESTÉ ABIERTA PARA VOTAR
+    // ========================================================
+    public void validarEleccionAbierta(Long id) {
+        Eleccion e = buscarPorIdEntity(id);
+        
+        LocalDateTime ahora = LocalDateTime.now();
+        
+        // Validar estado
+        if (!"ABIERTO".equalsIgnoreCase(e.getEstado())) {
+            throw new RuntimeException("La elección no está abierta para votar. Estado actual: " + e.getEstado());
+        }
+        
+        // Validar fechas
+        if (ahora.isBefore(e.getFechaInicio())) {
+            throw new RuntimeException("La elección aún no ha comenzado. Fecha de inicio: " + e.getFechaInicio());
+        }
+        
+        if (ahora.isAfter(e.getFechaFinaliza())) {
+            throw new RuntimeException("La elección ya ha finalizado. Fecha de finalización: " + e.getFechaFinaliza());
+        }
+    }
+
+    // ========================================================
+    // LISTAR ELECCIONES ACTIVAS/ABIERTAS
+    // ========================================================
+    public List<EleccionResponseDTO> listarActivas() {
+        return repo.findByEstado("ACTIVA")
+                .stream()
+                .map(this::buildDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<EleccionResponseDTO> listarAbiertas() {
+        return repo.findByEstado("ABIERTO")
+                .stream()
+                .map(this::buildDTO)
+                .collect(Collectors.toList());
+    }
+
+    // ========================================================
+    // MÉTODOS PRIVADOS AUXILIARES
+    // ========================================================
+    
+    private Eleccion buscarPorIdEntity(Long id) {
+        return repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Elección no encontrada"));
+    }
 
     // ========================================================
     // CONVERTIR A DTO
@@ -162,6 +356,7 @@ public class EleccionService {
                 .fechaFinaliza(e.getFechaFinaliza())
                 .tipoEleccionId(e.getTipoEleccion().getId())
                 .tipoId(e.getTipo().getId())
+                .procesoId(e.getProceso().getId())
                 .programaId(e.getPrograma() != null ? e.getPrograma().getId() : null)
                 .sedeId(e.getSede() != null ? e.getSede().getId() : null)
                 .facultadId(e.getFacultad() != null ? e.getFacultad().getId() : null)

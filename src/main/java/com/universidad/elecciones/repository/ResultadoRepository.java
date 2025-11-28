@@ -13,8 +13,10 @@ public interface ResultadoRepository extends JpaRepository<Resultado, Long> {
 
     long countByEleccionIdAndCandidatoId(Long eleccionId, Long candidatoId);
 
-    
     long countByEleccionId(Long eleccionId);
     List<Resultado> findByEleccionId(Long eleccionId);
     
+    List<Resultado> findByDocumento(String documento);
+    
+    Optional<Resultado> findByEleccionIdAndCensoId(Long eleccionId, Long censoId);
 }

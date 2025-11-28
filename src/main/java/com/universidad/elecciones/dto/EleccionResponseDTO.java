@@ -22,6 +22,7 @@ public class EleccionResponseDTO {
 
     private Long tipoEleccionId;
     private Long tipoId;
+    private Long procesoId;
     private Long programaId;
     private Long sedeId;
     private Long facultadId;
