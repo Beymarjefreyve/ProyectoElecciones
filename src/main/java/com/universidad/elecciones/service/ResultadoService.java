@@ -7,10 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.universidad.elecciones.dto.*;
 import com.universidad.elecciones.entity.*;
-import com.universidad.elecciones.repository.CandidatoRepository;
-import com.universidad.elecciones.repository.CensoRepository;
-import com.universidad.elecciones.repository.EleccionRepository;
-import com.universidad.elecciones.repository.ResultadoRepository;
+import com.universidad.elecciones.repository.*;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -30,6 +27,8 @@ public class ResultadoService {
     private final CensoRepository censoRepo;
 	@Autowired
     private final EleccionService eleccionService;
+	@Autowired
+    private final VotanteRepository votanteRepo;
 
     // ======================================================
     // POST /elecciones/{id}/votar
@@ -59,9 +58,10 @@ public class ResultadoService {
                 .orElseThrow(() -> new RuntimeException("Candidato no existe"));
 
         // Validar que el votante pertenece al censo de la elección
+        // Si no está registrado, lo agregamos automáticamente para permitir la votación
         Censo censo = censoRepo
                 .findByVotanteDocumentoAndEleccionId(req.getDocumento(), eleccionId)
-                .orElseThrow(() -> new RuntimeException("El votante no está habilitado para votar en esta elección"));
+                .orElseGet(() -> registrarAutomaticamenteEnCenso(req.getDocumento(), eleccion));
 
         // Validar voto repetido
         if (repo.existsByEleccionIdAndCensoId(eleccionId, censo.getId())) {
@@ -250,6 +250,23 @@ public class ResultadoService {
     // ======================================================
     // MÉTODOS PRIVADOS AUXILIARES
     // ======================================================
+    private Censo registrarAutomaticamenteEnCenso(String documento, Eleccion eleccion) {
+        Votante votante = votanteRepo.findByDocumento(documento)
+                .orElseThrow(() -> new RuntimeException("El documento " + documento + " no corresponde a un votante registrado"));
+
+        // Si otro proceso ya lo registró mientras tanto, reutilizamos el registro existente
+        Optional<Censo> existente = censoRepo.findByVotanteIdAndEleccionId(votante.getId(), eleccion.getId());
+        if (existente.isPresent()) {
+            return existente.get();
+        }
+
+        Censo nuevo = Censo.builder()
+                .votante(votante)
+                .eleccion(eleccion)
+                .build();
+
+        return censoRepo.save(nuevo);
+    }
 
     private List<ConteoPorFacultadDTO> calcularPorFacultad(List<Resultado> resultados) {
 

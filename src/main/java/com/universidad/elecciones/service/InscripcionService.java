@@ -37,6 +37,12 @@ public class InscripcionService {
         Eleccion eleccion = eleccionRepo.findById(eleccionId)
                 .orElseThrow(() -> new RuntimeException("Elección no existe"));
 
+        // Validar que la elección esté activa para inscribir candidatos
+        String estado = eleccion.getEstado() != null ? eleccion.getEstado().toUpperCase() : "";
+        if (!estado.equals("ACTIVA") && !estado.equals("ABIERTO")) {
+            throw new RuntimeException("No se pueden inscribir candidatos en una elección con estado " + eleccion.getEstado());
+        }
+
         Candidato candidato = candidatoRepo.findById(request.getCandidatoId())
                 .orElseThrow(() -> new RuntimeException("Candidato no existe"));
 
@@ -69,7 +75,10 @@ public class InscripcionService {
         eleccionRepo.findById(eleccionId)
                 .orElseThrow(() -> new RuntimeException("Elección no existe"));
 
+        // Solo devolver inscripciones activas para que en la votación
+        // solo aparezcan candidatos habilitados
         return repo.findByEleccionId(eleccionId).stream()
+                .filter(ins -> "ACTIVO".equalsIgnoreCase(ins.getEstado()))
                 .map(this::buildResponseDTO)
                 .toList();
     }

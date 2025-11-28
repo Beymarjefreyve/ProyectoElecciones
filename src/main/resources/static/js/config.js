@@ -30,6 +30,31 @@ const api = {
             throw error;
         }
     },
+    async getText(url) {
+        try {
+            console.log(`[API] GET (text): ${API_BASE_URL}${url}`);
+            const response = await fetch(`${API_BASE_URL}${url}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'text/plain, text/csv, */*'
+                }
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`[API] Error ${response.status}:`, errorText);
+                throw new Error(`Error ${response.status}: ${errorText || response.statusText}`);
+            }
+
+            return await response.text();
+        } catch (error) {
+            console.error('[API] Error en GET (text):', error);
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                throw new Error('No se pudo conectar con el servidor. Verifica que el backend esté corriendo en http://localhost:8080');
+            }
+            throw error;
+        }
+    },
 
     async post(url, data) {
         try {

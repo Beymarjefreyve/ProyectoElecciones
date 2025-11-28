@@ -43,27 +43,33 @@ async function cargarResultados() {
         ]);
 
         // Mostrar participación
-        document.getElementById('totalVotos').textContent = participacion.totalVotos || 0;
-        document.getElementById('totalCenso').textContent = participacion.totalCenso || 0;
-        const porcentaje = participacion.totalCenso > 0 
-            ? ((participacion.totalVotos / participacion.totalCenso) * 100).toFixed(2)
-            : 0;
-        document.getElementById('participacion').textContent = porcentaje + '%';
+        const totalVotantes = participacion?.votantes ?? 0;
+        const totalInscritos = participacion?.inscritos ?? 0;
+        document.getElementById('totalVotos').textContent = totalVotantes;
+        document.getElementById('totalCenso').textContent = totalInscritos;
+        const porcentaje = participacion?.participacion ?? (totalInscritos > 0
+            ? ((totalVotantes / totalInscritos) * 100).toFixed(2)
+            : 0);
+        document.getElementById('participacion').textContent = `${porcentaje}%`;
 
         // Mostrar tabla de resultados
         const tbody = document.getElementById('tablaResultados');
-        const totalVotos = resultados.reduce((sum, r) => sum + (r.totalVotos || 0), 0);
-        
-        tbody.innerHTML = resultados.map(r => {
-            const porcentaje = totalVotos > 0 ? ((r.totalVotos / totalVotos) * 100).toFixed(2) : 0;
-            return `
-                <tr>
-                    <td>${r.candidatoNombre || 'Sin nombre'}</td>
-                    <td>${r.totalVotos || 0}</td>
-                    <td>${porcentaje}%</td>
-                </tr>
-            `;
-        }).join('');
+        if (!resultados || resultados.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center">No hay votos registrados</td></tr>';
+        } else {
+            const totalVotos = resultados.reduce((sum, r) => sum + (r.votos || 0), 0);
+            
+            tbody.innerHTML = resultados.map(r => {
+                const porcentajeFila = totalVotos > 0 ? ((r.votos / totalVotos) * 100).toFixed(2) : 0;
+                return `
+                    <tr>
+                        <td>${r.candidatoNombre || 'Sin nombre'}</td>
+                        <td>${r.votos || 0}</td>
+                        <td>${porcentajeFila}%</td>
+                    </tr>
+                `;
+            }).join('');
+        }
 
         // Crear gráfico
         crearGrafico(resultados);
@@ -83,7 +89,7 @@ function crearGrafico(resultados) {
     }
 
     const labels = resultados.map(r => r.candidatoNombre || 'Sin nombre');
-    const data = resultados.map(r => r.totalVotos || 0);
+    const data = resultados.map(r => r.votos || 0);
 
     chartResultados = new Chart(ctx, {
         type: 'bar',
@@ -123,6 +129,13 @@ function crearGrafico(resultados) {
 }
 
 function mostrarEstadisticas(estadisticas) {
+    if (!estadisticas) {
+        document.getElementById('tablaFacultad').innerHTML = '<tr><td colspan="2" class="text-center">No hay datos</td></tr>';
+        document.getElementById('tablaPrograma').innerHTML = '<tr><td colspan="2" class="text-center">No hay datos</td></tr>';
+        document.getElementById('tablaSede').innerHTML = '<tr><td colspan="2" class="text-center">No hay datos</td></tr>';
+        return;
+    }
+
     // Por facultad
     const tbodyFacultad = document.getElementById('tablaFacultad');
     if (estadisticas.porFacultad && estadisticas.porFacultad.length > 0) {
@@ -161,7 +174,7 @@ async function exportarCSV() {
     }
 
     try {
-        const csv = await api.get(`/elecciones/${eleccionIdActual}/exportar-csv`);
+        const csv = await api.getText(`/elecciones/${eleccionIdActual}/exportar-csv`);
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');

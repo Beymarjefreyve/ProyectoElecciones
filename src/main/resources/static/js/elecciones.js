@@ -113,6 +113,17 @@ function mostrarElecciones(elecciones) {
                     <a href="/resultados.html?eleccionId=${eleccion.id}" class="btn btn-sm btn-outline-info">
                         <i class="bi bi-bar-chart"></i> Resultados
                     </a>
+                    <div class="btn-group btn-group-sm mt-2" role="group" aria-label="Cambiar estado">
+                        <button class="btn btn-outline-secondary${eleccion.estado === 'ACTIVA' ? ' active' : ''}" title="Marcar ACTIVA" onclick="cambiarEstadoEleccion(${eleccion.id}, 'ACTIVA')" ${eleccion.estado === 'ACTIVA' ? 'disabled' : ''}>
+                            ACTIVA
+                        </button>
+                        <button class="btn btn-outline-success${eleccion.estado === 'ABIERTO' ? ' active' : ''}" title="Marcar ABIERTO" onclick="cambiarEstadoEleccion(${eleccion.id}, 'ABIERTO')" ${eleccion.estado === 'ABIERTO' ? 'disabled' : ''}>
+                            ABIERTO
+                        </button>
+                        <button class="btn btn-outline-dark${eleccion.estado === 'CERRADO' ? ' active' : ''}" title="Marcar CERRADO" onclick="cambiarEstadoEleccion(${eleccion.id}, 'CERRADO')" ${eleccion.estado === 'CERRADO' ? 'disabled' : ''}>
+                            CERRADO
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
@@ -209,6 +220,17 @@ async function eliminarEleccion(id, nombre) {
         cargarElecciones();
     } catch (error) {
         showAlert('Error al eliminar: ' + error.message, 'danger');
+    }
+}
+
+async function cambiarEstadoEleccion(id, estado) {
+    try {
+        const estadoUpper = estado.toUpperCase();
+        await api.patch(`/elecciones/${id}/estado`, { estado: estadoUpper });
+        showAlert(`Estado actualizado a ${estadoUpper}`, 'success');
+        cargarElecciones();
+    } catch (error) {
+        showAlert('No se pudo cambiar el estado: ' + error.message, 'danger');
     }
 }
 

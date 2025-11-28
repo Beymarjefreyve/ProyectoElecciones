@@ -1,10 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     cargarElecciones();
+    cargarCandidatosSelect();
 });
 
 async function cargarElecciones() {
     try {
-        const elecciones = await api.get('/elecciones');
+        // Solo elecciones activas para inscribir candidatos
+        const elecciones = await api.get('/elecciones/activas');
         const select = document.getElementById('selectEleccionInscripcion');
         const selectModal = document.getElementById('inscripcionEleccionId');
         const options = '<option value="">Seleccione una elección</option>' +
@@ -13,6 +15,25 @@ async function cargarElecciones() {
         selectModal.innerHTML = options;
     } catch (error) {
         console.error('Error cargando elecciones:', error);
+    }
+}
+
+async function cargarCandidatosSelect() {
+    const select = document.getElementById('inscripcionCandidatoId');
+    if (!select) return;
+
+    try {
+        const candidatos = await api.get('/candidatos');
+        if (!candidatos || candidatos.length === 0) {
+            select.innerHTML = '<option value="">No hay candidatos registrados</option>';
+            return;
+        }
+
+        select.innerHTML = '<option value="">Seleccione un candidato</option>' +
+            candidatos.map(c => `<option value="${c.id}">${c.id} - ${c.nombre} (${c.documento})</option>`).join('');
+    } catch (error) {
+        console.error('Error cargando candidatos:', error);
+        select.innerHTML = '<option value="">Error al cargar candidatos</option>';
     }
 }
 

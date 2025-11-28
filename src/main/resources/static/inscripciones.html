@@ -30,6 +30,7 @@
                         <li class="nav-item"><a class="nav-link" href="/catalogos/tipos-solicitud.html"><i class="bi bi-file-text"></i> Tipos Solicitud</a></li>
                         <li class="nav-item"><a class="nav-link" href="/procesos.html"><i class="bi bi-calendar-event"></i> Procesos</a></li>
                         <li class="nav-item"><a class="nav-link" href="/elecciones.html"><i class="bi bi-clipboard-check"></i> Elecciones</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="/inscripciones.html"><i class="bi bi-person-check"></i> Inscripciones</a></li>
                         <li class="nav-item"><a class="nav-link" href="/candidatos.html"><i class="bi bi-person-badge"></i> Candidatos</a></li>
                         <li class="nav-item"><a class="nav-link" href="/votantes.html"><i class="bi bi-people"></i> Votantes</a></li>
                         <li class="nav-item"><a class="nav-link" href="/censo.html"><i class="bi bi-list-check"></i> Censo</a></li>
@@ -90,8 +91,10 @@
                             <select class="form-select" id="inscripcionEleccionId" required></select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Candidato ID *</label>
-                            <input type="number" class="form-control" id="inscripcionCandidatoId" required>
+                            <label class="form-label">Candidato *</label>
+                            <select class="form-select" id="inscripcionCandidatoId" required>
+                                <option value="">Seleccione un candidato</option>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Número *</label>
