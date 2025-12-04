@@ -178,7 +178,7 @@ async function guardarEleccion() {
     const fechaFinaliza = document.getElementById('eleccionFechaFin').value;
 
     if (!nombre || !fechaInicio || !fechaFinaliza) {
-        showAlert('Nombre, fecha inicio y fecha fin son obligatorios', 'warning');
+        showAlert('Todos los campos son obligatorios', 'warning');
         return;
     }
 

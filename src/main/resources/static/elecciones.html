@@ -52,7 +52,7 @@
                         <div class="row">
                             <div class="col-md-3">
                                 <label class="form-label">Filtrar por Estado</label>
-                                <select class="form-select" id="filtroEstado" onchange="filtrarPorEstado()">
+                                <select class="form-select" id="filtroEstado" onchange="filtrarPorEstado()" required>
                                     <option value="">Todos</option>
                                     <option value="ACTIVA">Activa</option>
                                     <option value="ABIERTO">Abierto</option>
@@ -88,6 +88,7 @@
             </main>
         </div>
     </div>
+
     <div class="modal fade" id="modalEleccion" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -95,54 +96,59 @@
                 <div class="modal-body">
                     <form id="formEleccion">
                         <input type="hidden" id="eleccionId">
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="eleccionNombre" class="form-label">Nombre *</label>
                                 <input type="text" class="form-control" id="eleccionNombre" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="eleccionDescripcion" class="form-label">Descripción</label>
-                                <input type="text" class="form-control" id="eleccionDescripcion">
+                                <label for="eleccionDescripcion" class="form-label">Descripción *</label>
+                                <input type="text" class="form-control" id="eleccionDescripcion" required>
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <label for="eleccionAnio" class="form-label">Año</label>
-                                <input type="number" class="form-control" id="eleccionAnio">
+                                <label for="eleccionAnio" class="form-label">Año *</label>
+                                <input type="number" class="form-control" id="eleccionAnio" required>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label for="eleccionSemestre" class="form-label">Semestre</label>
-                                <input type="number" class="form-control" id="eleccionSemestre">
+                                <label for="eleccionSemestre" class="form-label">Semestre *</label>
+                                <input type="number" class="form-control" id="eleccionSemestre" required>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label for="eleccionTipoEleccionId" class="form-label">Tipo Elección</label>
-                                <select class="form-select" id="eleccionTipoEleccionId"></select>
+                                <label for="eleccionTipoEleccionId" class="form-label">Tipo Elección *</label>
+                                <select class="form-select" id="eleccionTipoEleccionId" required></select>
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <label for="eleccionTipoId" class="form-label">Tipo</label>
-                                <select class="form-select" id="eleccionTipoId"></select>
+                                <label for="eleccionTipoId" class="form-label">Tipo *</label>
+                                <select class="form-select" id="eleccionTipoId" required></select>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label for="eleccionProcesoId" class="form-label">Proceso</label>
-                                <select class="form-select" id="eleccionProcesoId"></select>
+                                <label for="eleccionProcesoId" class="form-label">Proceso *</label>
+                                <select class="form-select" id="eleccionProcesoId" required></select>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label for="eleccionProgramaId" class="form-label">Programa</label>
-                                <select class="form-select" id="eleccionProgramaId"></select>
+                                <label for="eleccionProgramaId" class="form-label">Programa *</label>
+                                <select class="form-select" id="eleccionProgramaId" required></select>
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <label for="eleccionSedeId" class="form-label">Sede</label>
-                                <select class="form-select" id="eleccionSedeId"></select>
+                                <label for="eleccionSedeId" class="form-label">Sede *</label>
+                                <select class="form-select" id="eleccionSedeId" required></select>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label for="eleccionFacultadId" class="form-label">Facultad</label>
-                                <select class="form-select" id="eleccionFacultadId"></select>
+                                <label for="eleccionFacultadId" class="form-label">Facultad *</label>
+                                <select class="form-select" id="eleccionFacultadId" required></select>
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="eleccionFechaInicio" class="form-label">Fecha Inicio *</label>
@@ -153,8 +159,10 @@
                                 <input type="datetime-local" class="form-control" id="eleccionFechaFin" required>
                             </div>
                         </div>
+
                     </form>
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="guardarEleccion()">Guardar</button>
@@ -162,9 +170,9 @@
             </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/config.js"></script>
     <script src="/js/elecciones.js"></script>
 </body>
 </html>
-

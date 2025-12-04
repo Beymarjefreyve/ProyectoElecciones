@@ -76,9 +76,16 @@ async function guardarVotante() {
         modalVotante.hide();
         cargarVotantes();
     } catch (error) {
-        showAlert('Error al guardar: ' + error.message, 'danger');
+        // Detecta si el mensaje viene del backend indicando que el documento ya existe
+        if (error.message && error.message.includes('Este documento ya existe')) {
+            showAlert('El documento ya está registrado', 'warning');
+        } else {
+            showAlert('Error al guardar: ' + error.message, 'danger');
+        }
     }
 }
+
+
 
 async function eliminarVotante(id, nombre) {
     if (!confirm(`¿Está seguro de eliminar el votante "${nombre}"?`)) return;
