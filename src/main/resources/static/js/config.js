@@ -1,9 +1,20 @@
-// Configuración de la API - ruta vacía para mismo origen
+/**
+ * config.js - API Configuration and Utilities
+ * Configuracion centralizada para peticiones HTTP
+ */
+
 const API_BASE_URL = '';
 
-// Función para hacer peticiones HTTP con manejo de errores
+/**
+ * Funcion base para peticiones HTTP con manejo robusto de errores
+ * - Evita cache con cache: 'no-store'
+ * - Maneja respuestas vacias (204 No Content)
+ * - Parsea JSON o texto segun corresponda
+ */
 async function apiRequest(url, options = {}) {
     const defaultOptions = {
+        method: 'GET',
+        cache: 'no-store',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
@@ -13,59 +24,131 @@ async function apiRequest(url, options = {}) {
     const finalOptions = {
         ...defaultOptions,
         ...options,
-        headers: { ...defaultOptions.headers, ...options.headers }
+        headers: { ...defaultOptions.headers, ...(options.headers || {}) }
     };
 
-    const response = await fetch(url, finalOptions);
+    console.log(`[API] ${finalOptions.method} ${url}`);
 
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ mensaje: 'Error del servidor' }));
-        throw new Error(errorData.mensaje || `Error ${response.status}`);
+    const response = await fetch(API_BASE_URL + url, finalOptions);
+
+    // Leer respuesta como texto primero (para manejar vacio o no-JSON)
+    const text = await response.text();
+    let data = null;
+
+    if (text && text.trim()) {
+        try {
+            data = JSON.parse(text);
+        } catch {
+            data = text; // Si no es JSON, devolver como texto
+        }
     }
 
-    return response.json();
+    if (!response.ok) {
+        const msg = (data && (data.mensaje || data.message || data.error)) || `Error ${response.status}`;
+        console.error(`[API] Error: ${msg}`);
+        throw new Error(msg);
+    }
+
+    console.log(`[API] OK:`, data);
+    return data;
 }
 
-// Utilidades de API simplificadas
+/**
+ * Objeto API con metodos simplificados
+ */
 const api = {
-    async get(url) {
+    get(url) {
         return apiRequest(url, { method: 'GET' });
     },
 
-    async post(url, data) {
+    post(url, data) {
         return apiRequest(url, {
             method: 'POST',
             body: JSON.stringify(data)
         });
     },
 
-    async put(url, data) {
+    put(url, data) {
         return apiRequest(url, {
             method: 'PUT',
             body: JSON.stringify(data)
         });
     },
 
-    async delete(url) {
-        const response = await fetch(url, { method: 'DELETE' });
-        if (!response.ok) throw new Error(`Error ${response.status}`);
-        return response.status === 204 ? null : response.json();
+    delete(url) {
+        return apiRequest(url, { method: 'DELETE' });
     },
 
-    async patch(url, params = {}) {
+    patch(url, params = {}) {
+        // PATCH usa query params, no body (segun el backend actual)
         const queryString = new URLSearchParams(params).toString();
         const fullUrl = queryString ? `${url}?${queryString}` : url;
         return apiRequest(fullUrl, { method: 'PATCH' });
+    },
+
+    getText(url) {
+        return fetch(API_BASE_URL + url, {
+            method: 'GET',
+            cache: 'no-store',
+            headers: { 'Accept': 'text/plain' }
+        }).then(r => {
+            if (!r.ok) throw new Error(`Error ${r.status}`);
+            return r.text();
+        });
     }
 };
 
-// Formatear fechas
-const formatDate = (dateString) => {
+// =====================================================
+// UTILIDADES DE FORMATO
+// =====================================================
+
+function formatDate(dateString) {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString('es-ES');
-};
+}
 
-const formatDateTime = (dateString) => {
+function formatDateTime(dateString) {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleString('es-ES');
-};
+}
+
+// =====================================================
+// SISTEMA DE ALERTAS
+// =====================================================
+
+function showAlert(message, type = 'info') {
+    let container = document.getElementById('alertContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'alertContainer';
+        container.style.cssText = 'position: fixed; top: 70px; right: 20px; z-index: 9999; max-width: 400px;';
+        document.body.appendChild(container);
+    }
+
+    const alertId = 'alert-' + Date.now();
+    const alertHtml = `
+        <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show shadow" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', alertHtml);
+
+    // Auto-cerrar despues de 4 segundos
+    setTimeout(() => {
+        const alertEl = document.getElementById(alertId);
+        if (alertEl) {
+            alertEl.classList.remove('show');
+            setTimeout(() => alertEl.remove(), 150);
+        }
+    }, 4000);
+}
+
+// =====================================================
+// FUNCION BASE PARA LIMPIAR FORMULARIOS
+// =====================================================
+
+function limpiarFormulario() {
+    // Sobrescrita por cada modulo especifico
+    console.log('limpiarFormulario base llamada');
+}

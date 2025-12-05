@@ -40,14 +40,14 @@ function mostrarProcesos(procesos) {
     tbody.innerHTML = procesos.map(proceso => `
         <tr>
             <td>${proceso.id}</td>
-            <td>${proceso.descripcion || '-'}</td>
+            <td>${proceso.nombre || proceso.descripcion || '-'}</td>
             <td>${formatDate(proceso.fechaInicio)}</td>
             <td>${formatDate(proceso.fechaFin)}</td>
             <td>
                 <button class="btn btn-sm btn-outline-primary" onclick="editarProceso(${proceso.id})">
                     <i class="bi bi-pencil"></i> Editar
                 </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="eliminarProceso(${proceso.id}, '${proceso.descripcion || 'Proceso'}')">
+                <button class="btn btn-sm btn-outline-danger" onclick="eliminarProceso(${proceso.id}, '${proceso.nombre || proceso.descripcion || 'Proceso'}')">
                     <i class="bi bi-trash"></i> Eliminar
                 </button>
             </td>
@@ -59,9 +59,9 @@ async function editarProceso(id) {
     try {
         const proceso = await api.get(`/procesos/${id}`);
         document.getElementById('procesoId').value = proceso.id;
-        document.getElementById('procesoDescripcion').value = proceso.descripcion || '';
-        document.getElementById('procesoFechaInicio').value = proceso.fechaInicio ? proceso.fechaInicio.split('T')[0] : '';
-        document.getElementById('procesoFechaFin').value = proceso.fechaFin ? proceso.fechaFin.split('T')[0] : '';
+        document.getElementById('procesoNombre').value = proceso.nombre || proceso.descripcion || '';
+        document.getElementById('procesoFechaInicio').value = proceso.fechaInicio ? proceso.fechaInicio.substring(0, 16) : '';
+        document.getElementById('procesoFechaFin').value = proceso.fechaFin ? proceso.fechaFin.substring(0, 16) : '';
         editMode = true;
         document.getElementById('modalProcesoTitle').textContent = 'Editar Proceso';
         modalProceso.show();
@@ -70,13 +70,20 @@ async function editarProceso(id) {
     }
 }
 
+function limpiarFormulario() {
+    document.getElementById('formProceso').reset();
+    document.getElementById('procesoId').value = '';
+    editMode = false;
+    document.getElementById('modalProcesoTitle').textContent = 'Nuevo Proceso';
+}
+
 async function guardarProceso() {
     const id = document.getElementById('procesoId').value;
-    const descripcion = document.getElementById('procesoDescripcion').value.trim();
+    const nombre = document.getElementById('procesoNombre').value.trim();
     const fechaInicio = document.getElementById('procesoFechaInicio').value;
     const fechaFin = document.getElementById('procesoFechaFin').value;
 
-    if (!descripcion || !fechaInicio || !fechaFin) {
+    if (!nombre || !fechaInicio || !fechaFin) {
         showAlert('Todos los campos son obligatorios', 'warning');
         return;
     }
@@ -87,11 +94,12 @@ async function guardarProceso() {
     }
 
     try {
+        const data = { nombre, descripcion: nombre, fechaInicio, fechaFin };
         if (editMode && id) {
-            await api.put(`/procesos/${id}`, { descripcion, fechaInicio, fechaFin });
+            await api.put(`/procesos/${id}`, data);
             showAlert('Proceso actualizado correctamente', 'success');
         } else {
-            await api.post('/procesos', { descripcion, fechaInicio, fechaFin });
+            await api.post('/procesos', data);
             showAlert('Proceso creado correctamente', 'success');
         }
         modalProceso.hide();

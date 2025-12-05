@@ -1,15 +1,15 @@
 /**
  * layout.js - Sistema Centralizado de Layout y Control de Acceso (RBAC)
  * 
- * Este archivo es la ÚNICA fuente de verdad para:
- * 1. Generación del menú lateral (Sidebar) y superior (Navbar).
- * 2. Control de permisos por rol (ADMIN vs ESTUDIANTE).
- * 3. Protección de rutas y redirecciones.
- * 4. Etiquetas de usuario.
+ * ÚNICA fuente de verdad para:
+ * 1. Control de permisos por rol (ADMIN vs ESTUDIANTE)
+ * 2. Generación de menú lateral (Sidebar) 
+ * 3. Protección de rutas
+ * 4. Etiquetas de usuario
  */
 
 // =====================================================
-// 1. CONFIGURACIÓN
+// 1. CONFIGURACIÓN DE ROLES Y RUTAS
 // =====================================================
 
 const ROLES = {
@@ -50,13 +50,14 @@ const RUTAS = {
     ]
 };
 
+// MENÚ ÚNICO - El sidebar se genera desde aquí
 const MENU_ITEMS = [
     { label: 'Dashboard', icon: 'bi-house-door', href: '/index.html', roles: ['ADMIN'] },
     { label: 'Facultades', icon: 'bi-building', href: '/catalogos/facultades.html', roles: ['ADMIN'] },
     { label: 'Programas', icon: 'bi-book', href: '/catalogos/programas.html', roles: ['ADMIN'] },
     { label: 'Sedes', icon: 'bi-geo-alt', href: '/catalogos/sedes.html', roles: ['ADMIN'] },
     { label: 'Tipos', icon: 'bi-tags', href: '/catalogos/tipos.html', roles: ['ADMIN'] },
-    { label: 'Tipos Elección', icon: 'bi-ballot-check', href: '/catalogos/tipos-eleccion.html', roles: ['ADMIN'] },
+    { label: 'Tipos Elección', icon: 'bi-ui-radios', href: '/catalogos/tipos-eleccion.html', roles: ['ADMIN'] },
     { label: 'Tipos Solicitud', icon: 'bi-file-text', href: '/catalogos/tipos-solicitud.html', roles: ['ADMIN'] },
     { label: 'Procesos', icon: 'bi-calendar-event', href: '/procesos.html', roles: ['ADMIN'] },
     { label: 'Elecciones', icon: 'bi-clipboard-check', href: '/elecciones.html', roles: ['ADMIN'] },
@@ -65,8 +66,9 @@ const MENU_ITEMS = [
     { label: 'Votantes', icon: 'bi-people', href: '/votantes.html', roles: ['ADMIN'] },
     { label: 'Censo', icon: 'bi-list-check', href: '/censo.html', roles: ['ADMIN'] },
     { label: 'Solicitudes', icon: 'bi-envelope-paper', href: '/solicitudes.html', roles: ['ADMIN'] },
-    { label: 'Votar', icon: 'bi-check-circle', href: '/estudiante-votacion.html', roles: ['ESTUDIANTE'] },
-    { label: 'Resultados', icon: 'bi-bar-chart', href: '/resultados.html', roles: ['ADMIN'] }
+    { label: 'Resultados', icon: 'bi-bar-chart', href: '/resultados.html', roles: ['ADMIN'] },
+    // ESTUDIANTE - NUNCA visible para admin
+    { label: 'Votar', icon: 'bi-check-circle', href: '/estudiante-votacion.html', roles: ['ESTUDIANTE'] }
 ];
 
 // =====================================================
@@ -119,7 +121,7 @@ function verificarAcceso() {
         return false;
     }
 
-    // Protección estricta: Admin no puede entrar a rutas de estudiante
+    // ADMIN NO PUEDE VOTAR - Regla #1
     if (isAdmin()) {
         if (RUTAS.ESTUDIANTE.some(r => path.endsWith(r))) {
             console.warn('Acceso denegado: Admin intentando acceder a ruta de estudiante');
@@ -128,7 +130,7 @@ function verificarAcceso() {
         }
     }
 
-    // Protección estricta: Estudiante no puede entrar a rutas de admin
+    // Estudiante no puede entrar a rutas de admin
     if (isEstudiante()) {
         if (RUTAS.ADMIN.some(r => path.endsWith(r))) {
             console.warn('Acceso denegado: Estudiante intentando acceder a ruta de admin');
@@ -140,31 +142,63 @@ function verificarAcceso() {
     return true;
 }
 
+function requireAdmin() {
+    if (!getUsuario()) {
+        window.location.href = '/landing.html';
+        return false;
+    }
+    if (!isAdmin()) {
+        window.location.href = '/estudiante-votacion.html';
+        return false;
+    }
+    return true;
+}
+
+function requireEstudiante() {
+    if (!getUsuario()) {
+        window.location.href = '/landing.html';
+        return false;
+    }
+    if (!isEstudiante()) {
+        window.location.href = '/index.html';
+        return false;
+    }
+    return true;
+}
+
 // =====================================================
-// 4. GENERACIÓN DE UI (NAVBAR Y SIDEBAR)
+// 4. GENERACIÓN DE UI
 // =====================================================
 
 function generarNavbar() {
     const usuario = getUsuario();
     const nombre = usuario ? usuario.nombre : 'Usuario';
     const etiqueta = getEtiquetaRol();
-    const badgeClass = isAdmin() ? 'bg-danger' : 'bg-success'; // Diferenciar visualmente
+    const badgeClass = isAdmin() ? 'bg-danger' : 'bg-success';
 
     return `
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top navbar-top">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold" href="${isAdmin() ? '/index.html' : '/estudiante-votacion.html'}">
                 <i class="bi bi-ballot"></i> Sistema de Elecciones
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="d-flex align-items-center d-none d-lg-flex">
-                <span class="badge ${badgeClass} me-2">${etiqueta}</span>
-                <span class="text-light me-3 small">${nombre}</span>
-                <button class="btn btn-outline-light btn-sm" onclick="logout()">
-                    <i class="bi bi-box-arrow-right"></i> Salir
-                </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <span class="badge ${badgeClass} me-2">${etiqueta}</span>
+                    </li>
+                    <li class="nav-item">
+                        <span class="text-light me-3">${nombre}</span>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-outline-light btn-sm" onclick="logout()">
+                            <i class="bi bi-box-arrow-right"></i> Salir
+                        </button>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>`;
@@ -178,57 +212,72 @@ function generarSidebar() {
         .filter(item => item.roles.includes(rolActual))
         .map(item => {
             const active = path.endsWith(item.href) ? 'active' : '';
-            // Fix para rutas relativas vs absolutas
-            const href = item.href;
             return `
             <li class="nav-item">
-                <a class="nav-link ${active}" href="${href}">
-                    <i class="bi ${item.icon}"></i> ${item.label}
+                <a class="nav-link ${active}" href="${item.href}">
+                    <i class="bi ${item.icon} me-2"></i>${item.label}
                 </a>
             </li>`;
         }).join('');
 
     return `
-    <nav id="sidebarMenu" class="col-lg-2 d-lg-block sidebar collapse bg-white">
+    <nav id="sidebarMenu" class="sidebar d-lg-block collapse">
         <div class="position-sticky pt-3">
-            <div class="navbar-brand px-3 mb-3 text-muted text-uppercase small fw-bold">
-                Menú Principal
+            <div class="sidebar-heading px-3 mb-2 text-uppercase fw-bold small">
+                <i class="bi bi-menu-button-wide me-1"></i> Menú
             </div>
             <ul class="nav flex-column">
                 ${itemsHtml}
             </ul>
-            
-            <!-- Botón de salir visible en móvil dentro del menú -->
-            <div class="d-lg-none px-3 mt-4 border-top pt-3">
-                <div class="d-flex align-items-center mb-3">
-                    <span class="badge bg-secondary me-2">${getEtiquetaRol()}</span>
-                    <small>${getUsuario()?.nombre}</small>
-                </div>
-                <button class="btn btn-outline-danger w-100 btn-sm" onclick="logout()">
-                    <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-                </button>
-            </div>
         </div>
     </nav>`;
 }
 
 // =====================================================
-// 5. INICIALIZACIÓN
+// 5. APLICAR VISIBILIDAD POR ROL
+// =====================================================
+
+function aplicarVisibilidadRol() {
+    const esAdmin = isAdmin();
+
+    // Ocultar elementos admin-only si no es admin
+    document.querySelectorAll('.admin-only').forEach(el => {
+        el.style.display = esAdmin ? '' : 'none';
+    });
+
+    // Ocultar elementos estudiante-only si es admin
+    document.querySelectorAll('.estudiante-only').forEach(el => {
+        el.style.display = esAdmin ? 'none' : '';
+    });
+
+    // REGLA #1: Eliminar cualquier enlace de votación para admins
+    if (esAdmin) {
+        document.querySelectorAll('a[href*="votacion"], a[href*="votar"], .btn-votar, .link-votar').forEach(el => {
+            el.remove();
+        });
+    }
+}
+
+// =====================================================
+// 6. INICIALIZACIÓN
 // =====================================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Verificar acceso
     if (!verificarAcceso()) return;
 
     // Inyectar Navbar
     const navContainer = document.getElementById('navbar-container');
-    if (navContainer) navContainer.innerHTML = generarNavbar();
+    if (navContainer) {
+        navContainer.innerHTML = generarNavbar();
+    }
 
     // Inyectar Sidebar
     const sidebarContainer = document.getElementById('sidebar-container');
-    if (sidebarContainer) sidebarContainer.innerHTML = generarSidebar();
-
-    // Eliminar elementos "Votar" residuales si existen en el DOM por error
-    if (isAdmin()) {
-        document.querySelectorAll('.btn-votar, .link-votar, a[href*="votacion"]').forEach(el => el.remove());
+    if (sidebarContainer) {
+        sidebarContainer.innerHTML = generarSidebar();
     }
+
+    // Aplicar visibilidad por rol
+    aplicarVisibilidadRol();
 });

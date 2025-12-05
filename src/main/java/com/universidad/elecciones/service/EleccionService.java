@@ -18,19 +18,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EleccionService {
 
-	@Autowired
+    @Autowired
     private final EleccionRepository repo;
-	@Autowired
+    @Autowired
     private final TipoEleccionRepository tipoEleccionRepo;
-	@Autowired
+    @Autowired
     private final TipoRepository tipoRepo;
-	@Autowired
+    @Autowired
     private final ProgramaRepository programaRepo;
-	@Autowired
+    @Autowired
     private final SedeRepository sedeRepo;
-	@Autowired
+    @Autowired
     private final ProcesoRepository procesoRepo;
-	@Autowired
+    @Autowired
     private final FacultadRepository facultadRepo;
 
     // ========================================================
@@ -45,37 +45,31 @@ public class EleccionService {
         // FK obligatorias
         e.setTipoEleccion(
                 tipoEleccionRepo.findById(dto.getTipoEleccionId())
-                        .orElseThrow(() -> new RuntimeException("Tipo de elección no existe"))
-        );
+                        .orElseThrow(() -> new RuntimeException("Tipo de elección no existe")));
 
         e.setTipo(
                 tipoRepo.findById(dto.getTipoId())
-                        .orElseThrow(() -> new RuntimeException("Tipo no existe"))
-        );
+                        .orElseThrow(() -> new RuntimeException("Tipo no existe")));
 
         e.setProceso(
                 procesoRepo.findById(dto.getProcesoId())
-                        .orElseThrow(() -> new RuntimeException("Proceso no existe"))
-        );
+                        .orElseThrow(() -> new RuntimeException("Proceso no existe")));
 
         // FK opcionales
         if (dto.getProgramaId() != null)
             e.setPrograma(
                     programaRepo.findById(dto.getProgramaId())
-                            .orElseThrow(() -> new RuntimeException("Programa no existe"))
-            );
+                            .orElseThrow(() -> new RuntimeException("Programa no existe")));
 
         if (dto.getSedeId() != null)
             e.setSede(
                     sedeRepo.findById(dto.getSedeId())
-                            .orElseThrow(() -> new RuntimeException("Sede no existe"))
-            );
+                            .orElseThrow(() -> new RuntimeException("Sede no existe")));
 
         if (dto.getFacultadId() != null)
             e.setFacultad(
                     facultadRepo.findById(dto.getFacultadId())
-                            .orElseThrow(() -> new RuntimeException("Facultad no existe"))
-            );
+                            .orElseThrow(() -> new RuntimeException("Facultad no existe")));
 
         // Campos simples
         e.setNombre(dto.getNombre());
@@ -93,19 +87,13 @@ public class EleccionService {
         Eleccion saved = repo.save(e);
         return buildDTO(saved);
     }
-    
-    
-    
-    
+
     public EleccionResponseDTO obtenerPorId(Long id) {
         Eleccion e = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Elección no encontrada"));
 
         return buildDTO(e);
     }
-    
-    
-    
 
     // ========================================================
     // LISTAR ELECCIONES
@@ -131,32 +119,28 @@ public class EleccionService {
     // ========================================================
     public EleccionResponseDTO actualizar(Long id, EleccionRequestDTO dto) {
         Eleccion e = buscarPorIdEntity(id);
-        
+
         // Validar fechas
         validarFechas(dto.getFechaInicio(), dto.getFechaFinaliza());
 
         // FK obligatorias
         e.setTipoEleccion(
                 tipoEleccionRepo.findById(dto.getTipoEleccionId())
-                        .orElseThrow(() -> new RuntimeException("Tipo de elección no existe"))
-        );
+                        .orElseThrow(() -> new RuntimeException("Tipo de elección no existe")));
 
         e.setTipo(
                 tipoRepo.findById(dto.getTipoId())
-                        .orElseThrow(() -> new RuntimeException("Tipo no existe"))
-        );
+                        .orElseThrow(() -> new RuntimeException("Tipo no existe")));
 
         e.setProceso(
                 procesoRepo.findById(dto.getProcesoId())
-                        .orElseThrow(() -> new RuntimeException("Proceso no existe"))
-        );
+                        .orElseThrow(() -> new RuntimeException("Proceso no existe")));
 
         // FK opcionales
         if (dto.getProgramaId() != null) {
             e.setPrograma(
                     programaRepo.findById(dto.getProgramaId())
-                            .orElseThrow(() -> new RuntimeException("Programa no existe"))
-            );
+                            .orElseThrow(() -> new RuntimeException("Programa no existe")));
         } else {
             e.setPrograma(null);
         }
@@ -164,8 +148,7 @@ public class EleccionService {
         if (dto.getSedeId() != null) {
             e.setSede(
                     sedeRepo.findById(dto.getSedeId())
-                            .orElseThrow(() -> new RuntimeException("Sede no existe"))
-            );
+                            .orElseThrow(() -> new RuntimeException("Sede no existe")));
         } else {
             e.setSede(null);
         }
@@ -173,8 +156,7 @@ public class EleccionService {
         if (dto.getFacultadId() != null) {
             e.setFacultad(
                     facultadRepo.findById(dto.getFacultadId())
-                            .orElseThrow(() -> new RuntimeException("Facultad no existe"))
-            );
+                            .orElseThrow(() -> new RuntimeException("Facultad no existe")));
         } else {
             e.setFacultad(null);
         }
@@ -195,10 +177,11 @@ public class EleccionService {
     // ELIMINAR/DESACTIVAR ELECCIÓN
     // ========================================================
     public void eliminar(Long id) {
-        Eleccion e = buscarPorIdEntity(id);
-        // En lugar de eliminar físicamente, desactivamos
-        e.setEstado("CERRADO");
-        repo.save(e);
+        if (!repo.existsById(id)) {
+            throw new RuntimeException("Elección no encontrada");
+        }
+        repo.deleteById(id);
+        repo.flush(); // opcional, pero útil para forzar ejecución inmediata
     }
 
     // ========================================================
@@ -236,7 +219,7 @@ public class EleccionService {
     public List<EleccionResponseDTO> filtrarPorProceso(Long procesoId) {
         procesoRepo.findById(procesoId)
                 .orElseThrow(() -> new RuntimeException("Proceso no encontrado"));
-        
+
         return repo.findByProcesoId(procesoId)
                 .stream()
                 .map(this::buildDTO)
@@ -249,7 +232,7 @@ public class EleccionService {
     public List<EleccionResponseDTO> filtrarPorTipoEleccion(Long tipoEleccionId) {
         tipoEleccionRepo.findById(tipoEleccionId)
                 .orElseThrow(() -> new RuntimeException("Tipo de elección no encontrado"));
-        
+
         return repo.findByTipoEleccionId(tipoEleccionId)
                 .stream()
                 .map(this::buildDTO)
@@ -263,7 +246,7 @@ public class EleccionService {
         if (fechaInicio == null || fechaFinaliza == null) {
             throw new RuntimeException("Las fechas de inicio y fin son obligatorias");
         }
-        
+
         if (!fechaInicio.isBefore(fechaFinaliza)) {
             throw new RuntimeException("La fecha de inicio debe ser anterior a la fecha de finalización");
         }
@@ -274,20 +257,20 @@ public class EleccionService {
     // ========================================================
     public EleccionResponseDTO extenderFecha(Long id, LocalDateTime nuevaFechaFinaliza) {
         Eleccion e = buscarPorIdEntity(id);
-        
+
         // Validar que la nueva fecha sea posterior a la fecha actual de finalización
         if (!nuevaFechaFinaliza.isAfter(e.getFechaFinaliza())) {
             throw new RuntimeException("La nueva fecha de finalización debe ser posterior a la fecha actual");
         }
-        
+
         // Validar que la nueva fecha sea posterior a la fecha de inicio
         if (!nuevaFechaFinaliza.isAfter(e.getFechaInicio())) {
             throw new RuntimeException("La nueva fecha de finalización debe ser posterior a la fecha de inicio");
         }
-        
+
         e.setFechaFinaliza(nuevaFechaFinaliza);
         e.setExtendido(true);
-        
+
         Eleccion updated = repo.save(e);
         return buildDTO(updated);
     }
@@ -297,19 +280,19 @@ public class EleccionService {
     // ========================================================
     public void validarEleccionAbierta(Long id) {
         Eleccion e = buscarPorIdEntity(id);
-        
+
         LocalDateTime ahora = LocalDateTime.now();
-        
+
         // Validar estado
         if (!"ABIERTO".equalsIgnoreCase(e.getEstado())) {
             throw new RuntimeException("La elección no está abierta para votar. Estado actual: " + e.getEstado());
         }
-        
+
         // Validar fechas
         if (ahora.isBefore(e.getFechaInicio())) {
             throw new RuntimeException("La elección aún no ha comenzado. Fecha de inicio: " + e.getFechaInicio());
         }
-        
+
         if (ahora.isAfter(e.getFechaFinaliza())) {
             throw new RuntimeException("La elección ya ha finalizado. Fecha de finalización: " + e.getFechaFinaliza());
         }
@@ -335,7 +318,7 @@ public class EleccionService {
     // ========================================================
     // MÉTODOS PRIVADOS AUXILIARES
     // ========================================================
-    
+
     private Eleccion buscarPorIdEntity(Long id) {
         return repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Elección no encontrada"));
