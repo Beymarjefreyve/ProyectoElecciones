@@ -14,30 +14,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function cargarVotantes() {
     try {
-        const votantes = await api.get('/votantes');
+        const response = await fetch('/votantes');
+        let votantes = await response.json();
+
+        // Filtrar administradores (requisito del usuario)
+        votantes = votantes.filter(v => v.rol !== 'ADMIN' && v.rol !== 'ADMINISTRATIVO');
+
         const tbody = document.getElementById('votantesTable');
         if (votantes.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay votantes registrados</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay votantes registrados</td></tr>';
             return;
         }
-        tbody.innerHTML = votantes.map(votante => `
+
+        tbody.innerHTML = votantes.map(v => `
             <tr>
-                <td>${votante.id}</td>
-                <td>${votante.documento}</td>
-                <td>${votante.nombre}</td>
+                <td>${v.id}</td>
+                <td>${v.documento}</td>
+                <td>${v.nombre}</td>
+                <td>${v.email || '-'}</td>
+                <td><span class="badge bg-info">${v.rol || 'ESTUDIANTE'}</span></td>
+                <td><span class="badge bg-${v.estado === 'ACTIVO' ? 'success' : 'secondary'}">${v.estado || 'ACTIVO'}</span></td>
                 <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick="editarVotante(${votante.id})">
-                        <i class="bi bi-pencil"></i> Editar
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarVotante(${votante.id}, '${votante.nombre}')">
-                        <i class="bi bi-trash"></i> Eliminar
-                    </button>
+                    <button class="btn btn-sm btn-warning" onclick="editarVotante(${v.id})"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-danger" onclick="eliminarVotante(${v.id}, '${v.nombre}')"><i class="bi bi-trash"></i></button>
                 </td>
             </tr>
         `).join('');
     } catch (error) {
-        showAlert('Error al cargar los votantes: ' + error.message, 'danger');
-        document.getElementById('votantesTable').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al cargar datos</td></tr>';
+        console.error(error);
+        document.getElementById('votantesTable').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error al cargar datos</td></tr>';
     }
 }
 
@@ -102,8 +107,8 @@ async function validarVoto() {
 
     try {
         const resultado = await api.get(`/votantes/validar-voto?documento=${documento}&eleccionId=${eleccionId}`);
-        const mensaje = resultado.puedeVotar 
-            ? `✅ ${resultado.mensaje}` 
+        const mensaje = resultado.puedeVotar
+            ? `✅ ${resultado.mensaje}`
             : `❌ ${resultado.mensaje}`;
         showAlert(mensaje, resultado.puedeVotar ? 'success' : 'warning');
     } catch (error) {

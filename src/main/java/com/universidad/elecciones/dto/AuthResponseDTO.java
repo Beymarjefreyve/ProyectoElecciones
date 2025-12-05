@@ -1,4 +1,4 @@
-package com.universidad.elecciones.auth;
+package com.universidad.elecciones.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,10 +9,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RegisterRequest {
+public class AuthResponseDTO {
+    private Long id;
     private String documento;
-    private String password;
-    private String email;
     private String nombre;
+    private String email;
+    private String rol;
     private Long facultadId;
+    private String facultadNombre;
+    private String mensaje;
+    private boolean success;
 }

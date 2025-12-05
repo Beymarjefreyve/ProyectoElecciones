@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Votación - Sistema de Elecciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        body {
+            min-height: 100vh;
+            background: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .navbar-custom {
+            background: var(--primary-gradient);
+        }
+
+        .welcome-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .candidato-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .candidato-card:hover {
+            border-color: #11998e;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(17, 153, 142, 0.2);
+        }
+
+        .candidato-card.selected {
+            border-color: #11998e;
+            background: rgba(17, 153, 142, 0.1);
+        }
+
+        .candidato-numero {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0 auto 1rem;
+        }
+
+        .btn-votar {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .btn-votar:disabled {
+            background: #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand text-white fw-bold" href="#"><i class="bi bi-ballot-check me-2"></i>Sistema de
+                Elecciones</a>
+            <div class="d-flex align-items-center">
+                <span class="text-white me-3" id="userName">Cargando...</span>
+                <button class="btn btn-outline-light btn-sm" onclick="logout()"><i class="bi bi-box-arrow-right"></i>
+                    Salir</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4" style="max-width: 900px;">
+        <div class="welcome-card">
+            <h2><i class="bi bi-check-circle me-2"></i>¡Bienvenido!</h2>
+            <p class="text-muted mb-0">Aquí puedes ejercer tu derecho al voto en las elecciones activas.</p>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div id="eleccionContainer">
+            <div class="mb-4">
+                <label class="form-label fw-bold">Selecciona una elección:</label>
+                <select class="form-select" id="selectEleccion" onchange="cargarCandidatos()"
+                    style="border-radius: 12px;">
+                    <option value="">-- Selecciona --</option>
+                </select>
+            </div>
+
+            <div id="candidatosSection" style="display: none;">
+                <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                    <div class="card-header bg-white p-4 border-bottom">
+                        <h4 class="mb-0" id="eleccionNombre">Elección</h4>
+                        <small class="text-muted" id="eleccionDescripcion"></small>
+                    </div>
+                    <div class="card-body p-4">
+                        <h5 class="mb-4">Selecciona tu candidato:</h5>
+                        <div class="row" id="candidatosContainer"></div>
+                        <div class="text-center mt-4">
+                            <button class="btn btn-votar" id="btnVotar" disabled onclick="confirmarVoto()">
+                                <i class="bi bi-check-circle me-2"></i>Confirmar mi Voto
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/layout.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        let candidatoSeleccionado = null;
+        let eleccionActual = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!requireEstudiante()) return;
+            document.getElementById('userName').textContent = getUsuario()?.nombre || 'Estudiante';
+            cargarElecciones();
+        });
+
+        async function cargarElecciones() {
+            try {
+                const response = await fetch(API_BASE_URL + '/elecciones/abiertas');
+                const elecciones = await response.json();
+                const select = document.getElementById('selectEleccion');
+
+                if (elecciones.length === 0) {
+                    showAlert('No hay elecciones activas en este momento.', 'info');
+                    return;
+                }
+
+                elecciones.forEach(e => {
+                    const opt = document.createElement('option');
+                    opt.value = e.id;
+                    opt.textContent = e.nombre;
+                    opt.dataset.desc = e.descripcion || '';
+                    select.appendChild(opt);
+                });
+            } catch (error) { showAlert('Error al cargar elecciones', 'danger'); }
+        }
+
+        async function cargarCandidatos() {
+            const id = document.getElementById('selectEleccion').value;
+            if (!id) {
+                document.getElementById('candidatosSection').style.display = 'none';
+                return;
+            }
+
+            eleccionActual = id;
+            candidatoSeleccionado = null;
+            document.getElementById('btnVotar').disabled = true;
+            document.getElementById('eleccionNombre').textContent = document.getElementById('selectEleccion').selectedOptions[0].textContent;
+
+            try {
+                // Verificar si ya votó
+                const usuario = getUsuario();
+                const historial = await (await fetch(`${API_BASE_URL}/elecciones/${id}/votos`)).json();
+                if (historial.some(v => v.documento === usuario.documento)) {
+                    showAlert('Ya has votado en esta elección.', 'warning');
+                    document.getElementById('candidatosSection').style.display = 'none';
+                    return;
+                }
+
+                const candidatos = await (await fetch(`${API_BASE_URL}/elecciones/${id}/candidatos`)).json();
+                const container = document.getElementById('candidatosContainer');
+
+                if (candidatos.length === 0) {
+                    container.innerHTML = '<div class="col-12 text-center text-muted">No hay candidatos inscritos</div>';
+                } else {
+                    container.innerHTML = candidatos.map(c => `
+                        <div class="col-md-4 mb-3">
+                            <div class="candidato-card" onclick="seleccionar(${c.candidatoId}, this)">
+                                <div class="candidato-numero">${c.numero}</div>
+                                <h5>${c.candidatoNombre}</h5>
+                                ${c.candidatoImagen ? `<img src="${c.candidatoImagen}" class="rounded-circle mb-2" width="60" height="60" style="object-fit:cover">` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                document.getElementById('candidatosSection').style.display = 'block';
+                document.getElementById('alertContainer').innerHTML = '';
+            } catch (error) { showAlert('Error al cargar datos', 'danger'); }
+        }
+
+        function seleccionar(id, el) {
+            document.querySelectorAll('.candidato-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            candidatoSeleccionado = id;
+            document.getElementById('btnVotar').disabled = false;
+        }
+
+        async function confirmarVoto() {
+            if (!confirm('¿Confirmar voto? Es irreversible.')) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/elecciones/${eleccionActual}/votar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        candidatoId: candidatoSeleccionado,
+                        documento: getUsuario().documento
+                    })
+                });
+                if (res.ok) {
+                    alert('¡Voto registrado!');
+                    location.reload();
+                } else {
+                    const err = await res.text();
+                    showAlert('Error: ' + err, 'danger');
+                }
+            } catch (e) { showAlert('Error de conexión', 'danger'); }
+        }
+
+        function showAlert(msg, type) {
+            document.getElementById('alertContainer').innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+        }
+    </script>
+</body>
+
+</html>

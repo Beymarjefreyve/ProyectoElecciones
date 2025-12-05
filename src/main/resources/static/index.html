@@ -1,132 +1,33 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Sistema de Elecciones</title>
-    
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Custom CSS -->
     <link href="/css/custom.css" rel="stylesheet">
 </head>
+
 <body>
-    <!-- Navbar superior -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top navbar-top">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="/index.html">
-                <i class="bi bi-ballot"></i> Sistema de Elecciones
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-        </div>
-    </nav>
+    <!-- Navbar generado dinámicamente -->
+    <div id="navbar-container"></div>
 
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar izquierdo -->
-            <nav id="sidebarMenu" class="col-lg-2 d-lg-block sidebar collapse">
-                <div class="position-sticky pt-3">
-                    <div class="navbar-brand">
-                        <i class="bi bi-menu-button-wide"></i> Menú Principal
-                    </div>
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="/index.html">
-                                <i class="bi bi-house-door"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/catalogos/facultades.html">
-                                <i class="bi bi-building"></i> Facultades
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/catalogos/programas.html">
-                                <i class="bi bi-book"></i> Programas
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/catalogos/sedes.html">
-                                <i class="bi bi-geo-alt"></i> Sedes
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/catalogos/tipos.html">
-                                <i class="bi bi-tags"></i> Tipos
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/catalogos/tipos-eleccion.html">
-                                <i class="bi bi-ballot-check"></i> Tipos Elección
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/catalogos/tipos-solicitud.html">
-                                <i class="bi bi-file-text"></i> Tipos Solicitud
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/procesos.html">
-                                <i class="bi bi-calendar-event"></i> Procesos
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/elecciones.html">
-                                <i class="bi bi-clipboard-check"></i> Elecciones
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/inscripciones.html">
-                                <i class="bi bi-person-check"></i> Inscripciones
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/candidatos.html">
-                                <i class="bi bi-person-badge"></i> Candidatos
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/votantes.html">
-                                <i class="bi bi-people"></i> Votantes
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/censo.html">
-                                <i class="bi bi-list-check"></i> Censo
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/solicitudes.html">
-                                <i class="bi bi-envelope-paper"></i> Solicitudes
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/votacion.html">
-                                <i class="bi bi-check-circle"></i> Votar
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/resultados.html">
-                                <i class="bi bi-bar-chart"></i> Resultados
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+            <!-- Sidebar generado dinámicamente -->
+            <div id="sidebar-container"></div>
 
             <!-- Zona principal -->
             <main class="col-lg-10 ms-sm-auto px-md-4">
                 <div class="pt-4 pb-3 border-bottom mb-4">
                     <h1 class="h3 fw-semibold"><i class="bi bi-house-door"></i> Dashboard</h1>
-                    <p class="text-muted">Bienvenido al panel administrativo del sistema de elecciones universitarias.</p>
+                    <p class="text-muted">Bienvenido al panel del sistema de elecciones universitarias.</p>
                 </div>
 
-                <!-- Estadísticas rápidas -->
-                <div class="row mb-4" id="statsContainer">
+                <!-- Estadísticas rápidas (solo admin) -->
+                <div class="row mb-4 admin-only" id="statsContainer">
                     <div class="col-md-3">
                         <div class="stats-card">
                             <h5 class="mb-0">Elecciones Activas</h5>
@@ -153,8 +54,8 @@
                     </div>
                 </div>
 
-                <!-- Accesos rápidos -->
-                <div class="row">
+                <!-- Accesos rápidos ADMIN -->
+                <div class="row admin-only">
                     <div class="col-md-6 mb-4">
                         <div class="card">
                             <div class="card-header bg-primary text-white">
@@ -165,13 +66,13 @@
                                     <a href="/elecciones.html" class="btn btn-outline-primary">
                                         <i class="bi bi-clipboard-check"></i> Gestionar Elecciones
                                     </a>
-                                    <a href="/votacion.html" class="btn btn-outline-success">
-                                        <i class="bi bi-check-circle"></i> Ir a Votar
+                                    <a href="/candidatos.html" class="btn btn-outline-warning">
+                                        <i class="bi bi-person-badge"></i> Gestionar Candidatos
                                     </a>
                                     <a href="/resultados.html" class="btn btn-outline-info">
                                         <i class="bi bi-bar-chart"></i> Ver Resultados
                                     </a>
-                                    <a href="/censo.html" class="btn btn-outline-warning">
+                                    <a href="/censo.html" class="btn btn-outline-secondary">
                                         <i class="bi bi-list-check"></i> Gestionar Censo
                                     </a>
                                 </div>
@@ -186,7 +87,7 @@
                             <div class="card-body">
                                 <p class="mb-2"><strong>Sistema de Gestión de Elecciones Universitarias</strong></p>
                                 <p class="text-muted small mb-0">
-                                    Este sistema permite gestionar procesos electorales, candidatos, votantes, 
+                                    Este sistema permite gestionar procesos electorales, candidatos, votantes,
                                     censo electoral, votaciones y resultados de manera eficiente y segura.
                                 </p>
                             </div>
@@ -194,8 +95,25 @@
                     </div>
                 </div>
 
-                <!-- Elecciones recientes -->
-                <div class="row">
+                <!-- Vista ESTUDIANTE -->
+                <div class="row estudiante-only">
+                    <div class="col-12 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="bi bi-check-circle"></i> Votación</h5>
+                            </div>
+                            <div class="card-body text-center">
+                                <p class="mb-3">Accede a las elecciones activas para emitir tu voto.</p>
+                                <a href="/estudiante-votacion.html" class="btn btn-success btn-lg">
+                                    <i class="bi bi-check-circle me-2"></i>Ir a Votar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Elecciones recientes (solo admin) -->
+                <div class="row admin-only">
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header">
@@ -229,17 +147,15 @@
         </div>
     </div>
 
-    <!-- Footer -->
     <footer class="text-center mt-auto py-3 bg-dark text-light">
         <div>© 2024 Sistema de Elecciones Universitarias</div>
     </footer>
 
-    <!-- Bootstrap JS bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Config JS -->
     <script src="/js/config.js"></script>
-    <!-- Dashboard JS -->
+    <script src="/js/layout.js"></script>
+    <script src="/js/auth.js"></script>
     <script src="/js/dashboard.js"></script>
 </body>
-</html>
 
+</html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,62 +9,21 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="/css/custom.css" rel="stylesheet">
 </head>
+
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top navbar-top">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="/index.html"><i class="bi bi-ballot"></i> Sistema de Elecciones</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu"><span class="navbar-toggler-icon"></span></button>
-        </div>
-    </nav>
+    <div id="navbar-container"></div>
     <div class="container-fluid">
         <div class="row">
-            <nav id="sidebarMenu" class="col-lg-2 d-lg-block sidebar collapse">
-                <div class="position-sticky pt-3">
-                    <div class="navbar-brand"><i class="bi bi-menu-button-wide"></i> Menú Principal</div>
-                    <ul class="nav flex-column">
-                        <li class="nav-item"><a class="nav-link" href="/index.html"><i class="bi bi-house-door"></i> Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/catalogos/facultades.html"><i class="bi bi-building"></i> Facultades</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/catalogos/programas.html"><i class="bi bi-book"></i> Programas</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/catalogos/sedes.html"><i class="bi bi-geo-alt"></i> Sedes</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/catalogos/tipos.html"><i class="bi bi-tags"></i> Tipos</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/catalogos/tipos-eleccion.html"><i class="bi bi-ballot-check"></i> Tipos Elección</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/catalogos/tipos-solicitud.html"><i class="bi bi-file-text"></i> Tipos Solicitud</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/procesos.html"><i class="bi bi-calendar-event"></i> Procesos</a></li>
-                        <li class="nav-item"><a class="nav-link active" href="/elecciones.html"><i class="bi bi-clipboard-check"></i> Elecciones</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/inscripciones.html"><i class="bi bi-person-check"></i> Inscripciones</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/candidatos.html"><i class="bi bi-person-badge"></i> Candidatos</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/votantes.html"><i class="bi bi-people"></i> Votantes</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/censo.html"><i class="bi bi-list-check"></i> Censo</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/solicitudes.html"><i class="bi bi-envelope-paper"></i> Solicitudes</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/votacion.html"><i class="bi bi-check-circle"></i> Votar</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/resultados.html"><i class="bi bi-bar-chart"></i> Resultados</a></li>
-                    </ul>
-                </div>
-            </nav>
+            <div id="sidebar-container"></div>
             <main class="col-lg-10 ms-sm-auto px-md-4">
                 <div class="pt-4 pb-3 border-bottom mb-4">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div><h1 class="h3 fw-semibold"><i class="bi bi-clipboard-check"></i> Gestión de Elecciones</h1><p class="text-muted">Administra las elecciones</p></div>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalEleccion"><i class="bi bi-plus-circle"></i> Nueva Elección</button>
-                    </div>
-                </div>
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <label class="form-label">Filtrar por Estado</label>
-                                <select class="form-select" id="filtroEstado" onchange="filtrarPorEstado()">
-                                    <option value="">Todos</option>
-                                    <option value="ACTIVA">Activa</option>
-                                    <option value="ABIERTO">Abierto</option>
-                                    <option value="CERRADO">Cerrado</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <button class="btn btn-outline-primary mt-4" onclick="cargarEleccionesActivas()">Activas</button>
-                                <button class="btn btn-outline-success mt-4" onclick="cargarEleccionesAbiertas()">Abiertas</button>
-                            </div>
+                        <div>
+                            <h1 class="h3 fw-semibold"><i class="bi bi-clipboard-check"></i> Gestión de Elecciones</h1>
+                            <p class="text-muted">Administra las elecciones</p>
                         </div>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalEleccion"><i
+                                class="bi bi-plus-circle"></i> Nueva Elección</button>
                     </div>
                 </div>
                 <div class="card">
@@ -74,13 +34,16 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Nombre</th>
-                                        <th>Estado</th>
-                                        <th>Fecha Inicio</th>
-                                        <th>Fecha Fin</th>
+                                        <th>Proceso</th>
+                                        <th>Tipo</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody id="eleccionesTable"><tr><td colspan="6" class="text-center">Cargando...</td></tr></tbody>
+                                <tbody id="eleccionesTable">
+                                    <tr>
+                                        <td colspan="5" class="text-center">Cargando...</td>
+                                    </tr>
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -91,80 +54,59 @@
     <div class="modal fade" id="modalEleccion" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title" id="modalEleccionTitle">Nueva Elección</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEleccionTitle">Nueva Elección</h5><button type="button"
+                        class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
                 <div class="modal-body">
-                    <form id="formEleccion">
-                        <input type="hidden" id="eleccionId">
+                    <form id="formEleccion"><input type="hidden" id="eleccionId">
+                        <div class="mb-3"><label class="form-label">Nombre *</label><input type="text"
+                                class="form-control" id="eleccionNombre" required></div>
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="eleccionNombre" class="form-label">Nombre *</label>
-                                <input type="text" class="form-control" id="eleccionNombre" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="eleccionDescripcion" class="form-label">Descripción</label>
-                                <input type="text" class="form-control" id="eleccionDescripcion">
-                            </div>
+                            <div class="col-md-6 mb-3"><label class="form-label">Proceso *</label><select
+                                    class="form-select" id="eleccionProcesoId" required>
+                                    <option value="">Seleccione</option>
+                                </select></div>
+                            <div class="col-md-6 mb-3"><label class="form-label">Tipo Elección *</label><select
+                                    class="form-select" id="eleccionTipoId" required>
+                                    <option value="">Seleccione</option>
+                                </select></div>
                         </div>
                         <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="eleccionAnio" class="form-label">Año</label>
-                                <input type="number" class="form-control" id="eleccionAnio">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="eleccionSemestre" class="form-label">Semestre</label>
-                                <input type="number" class="form-control" id="eleccionSemestre">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="eleccionTipoEleccionId" class="form-label">Tipo Elección</label>
-                                <select class="form-select" id="eleccionTipoEleccionId"></select>
-                            </div>
+                            <div class="col-md-6 mb-3"><label class="form-label">Sede</label><select class="form-select"
+                                    id="eleccionSedeId">
+                                    <option value="">Todas</option>
+                                </select></div>
+                            <div class="col-md-6 mb-3"><label class="form-label">Facultad</label><select
+                                    class="form-select" id="eleccionFacultadId">
+                                    <option value="">Todas</option>
+                                </select></div>
                         </div>
                         <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="eleccionTipoId" class="form-label">Tipo</label>
-                                <select class="form-select" id="eleccionTipoId"></select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="eleccionProcesoId" class="form-label">Proceso</label>
-                                <select class="form-select" id="eleccionProcesoId"></select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="eleccionProgramaId" class="form-label">Programa</label>
-                                <select class="form-select" id="eleccionProgramaId"></select>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="eleccionSedeId" class="form-label">Sede</label>
-                                <select class="form-select" id="eleccionSedeId"></select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="eleccionFacultadId" class="form-label">Facultad</label>
-                                <select class="form-select" id="eleccionFacultadId"></select>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="eleccionFechaInicio" class="form-label">Fecha Inicio *</label>
-                                <input type="datetime-local" class="form-control" id="eleccionFechaInicio" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="eleccionFechaFin" class="form-label">Fecha Fin *</label>
-                                <input type="datetime-local" class="form-control" id="eleccionFechaFin" required>
-                            </div>
+                            <div class="col-md-6 mb-3"><label class="form-label">Programa</label><select
+                                    class="form-select" id="eleccionProgramaId">
+                                    <option value="">Todos</option>
+                                </select></div>
+                            <div class="col-md-6 mb-3"><label class="form-label">Estado</label><select
+                                    class="form-select" id="eleccionEstado">
+                                    <option value="ACTIVO">Activo</option>
+                                    <option value="INACTIVO">Inactivo</option>
+                                </select></div>
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="guardarEleccion()">Guardar</button>
-                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-primary"
+                        onclick="guardarEleccion()">Guardar</button></div>
             </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/config.js"></script>
+    <script src="/js/layout.js"></script>
+    <script src="/js/auth.js"></script>
     <script src="/js/elecciones.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', () => { if (!requireAdmin()) return; });</script>
 </body>
-</html>
 
+</html>

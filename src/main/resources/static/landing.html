@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenido - Sistema de Elecciones Universitarias</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        body {
+            min-height: 100vh;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .landing-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 3rem;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .logo-icon {
+            font-size: 4rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+        
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 2.5rem;
+        }
+        
+        .role-card {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .role-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+        
+        .role-card.estudiante:hover {
+            border-color: #11998e;
+            box-shadow: 0 10px 30px rgba(17, 153, 142, 0.2);
+        }
+        
+        .role-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .role-card.estudiante .role-icon {
+            color: #11998e;
+        }
+        
+        .role-card.admin .role-icon {
+            color: #667eea;
+        }
+        
+        .role-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+        
+        .role-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .footer-text {
+            margin-top: 2rem;
+            color: #999;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="landing-container">
+        <div class="logo-icon">
+            <i class="bi bi-ballot-check"></i>
+        </div>
+        <h1 class="title">Sistema de Elecciones</h1>
+        <p class="subtitle">Universidad - Plataforma de Votación Electrónica</p>
+        
+        <p class="mb-4">Selecciona tu tipo de usuario para continuar:</p>
+        
+        <a href="/login-estudiante.html" class="text-decoration-none">
+            <div class="role-card estudiante">
+                <div class="role-icon">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </div>
+                <div class="role-title">Soy Estudiante</div>
+                <div class="role-description">
+                    Accede para votar en las elecciones universitarias
+                </div>
+            </div>
+        </a>
+        
+        <a href="/login-admin.html" class="text-decoration-none">
+            <div class="role-card admin">
+                <div class="role-icon">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <div class="role-title">Soy Administrador</div>
+                <div class="role-description">
+                    Gestiona elecciones, candidatos y resultados
+                </div>
+            </div>
+        </a>
+        
+        <p class="footer-text">
+            © 2024 Sistema de Elecciones Universitarias
+        </p>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
