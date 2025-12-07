@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,71 +8,61 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="/css/custom.css" rel="stylesheet">
+    <style>
+        .candidate-photo {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+    </style>
 </head>
+
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top navbar-top">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="/index.html"><i class="bi bi-ballot"></i> Sistema de Elecciones</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu"><span class="navbar-toggler-icon"></span></button>
+    <div id="navbar-container"></div>
+    <div id="sidebar-container"></div>
+
+    <main>
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+            <h1 class="h2"><i class="bi bi-person-badge me-2"></i>Gestión de Candidatos</h1>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCandidato"
+                onclick="limpiarFormulario()">
+                <i class="bi bi-plus-circle me-1"></i>Nuevo Candidato
+            </button>
         </div>
-    </nav>
-    <div class="container-fluid">
-        <div class="row">
-            <nav id="sidebarMenu" class="col-lg-2 d-lg-block sidebar collapse">
-                <div class="position-sticky pt-3">
-                    <div class="navbar-brand"><i class="bi bi-menu-button-wide"></i> Menú Principal</div>
-                    <ul class="nav flex-column">
-                        <li class="nav-item"><a class="nav-link" href="/index.html"><i class="bi bi-house-door"></i> Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/catalogos/facultades.html"><i class="bi bi-building"></i> Facultades</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/catalogos/programas.html"><i class="bi bi-book"></i> Programas</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/catalogos/sedes.html"><i class="bi bi-geo-alt"></i> Sedes</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/catalogos/tipos.html"><i class="bi bi-tags"></i> Tipos</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/catalogos/tipos-eleccion.html"><i class="bi bi-ballot-check"></i> Tipos Elección</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/catalogos/tipos-solicitud.html"><i class="bi bi-file-text"></i> Tipos Solicitud</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/procesos.html"><i class="bi bi-calendar-event"></i> Procesos</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/elecciones.html"><i class="bi bi-clipboard-check"></i> Elecciones</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/inscripciones.html"><i class="bi bi-person-check"></i> Inscripciones</a></li>
-                        <li class="nav-item"><a class="nav-link active" href="/candidatos.html"><i class="bi bi-person-badge"></i> Candidatos</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/votantes.html"><i class="bi bi-people"></i> Votantes</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/censo.html"><i class="bi bi-list-check"></i> Censo</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/solicitudes.html"><i class="bi bi-envelope-paper"></i> Solicitudes</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/votacion.html"><i class="bi bi-check-circle"></i> Votar</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/resultados.html"><i class="bi bi-bar-chart"></i> Resultados</a></li>
-                    </ul>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Foto</th>
+                                <th>Documento</th>
+                                <th>Nombre</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="candidatosTable">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Cargando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-            </nav>
-            <main class="col-lg-10 ms-sm-auto px-md-4">
-                <div class="pt-4 pb-3 border-bottom mb-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div><h1 class="h3 fw-semibold"><i class="bi bi-person-badge"></i> Gestión de Candidatos</h1><p class="text-muted">Administra los candidatos</p></div>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCandidato"><i class="bi bi-plus-circle"></i> Nuevo Candidato</button>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Documento</th>
-                                        <th>Nombre</th>
-                                        <th>Imagen</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="candidatosTable"><tr><td colspan="5" class="text-center">Cargando...</td></tr></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </main>
+            </div>
         </div>
-    </div>
+    </main>
+
+    <!-- Modal Candidato -->
     <div class="modal fade" id="modalCandidato" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title" id="modalCandidatoTitle">Nuevo Candidato</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCandidatoTitle">Nuevo Candidato</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
                 <div class="modal-body">
                     <form id="formCandidato">
                         <input type="hidden" id="candidatoId">
@@ -80,12 +71,14 @@
                             <input type="text" class="form-control" id="candidatoDocumento" required>
                         </div>
                         <div class="mb-3">
-                            <label for="candidatoNombre" class="form-label">Nombre *</label>
+                            <label for="candidatoNombre" class="form-label">Nombre Completo *</label>
                             <input type="text" class="form-control" id="candidatoNombre" required>
                         </div>
                         <div class="mb-3">
-                            <label for="candidatoImagen" class="form-label">URL Imagen</label>
-                            <input type="text" class="form-control" id="candidatoImagen" placeholder="https://ejemplo.com/imagen.jpg">
+                            <label for="candidatoImagen" class="form-label">URL de Imagen (opcional)</label>
+                            <input type="url" class="form-control" id="candidatoImagen"
+                                placeholder="https://ejemplo.com/foto.jpg">
+                            <div class="form-text">Ingresa la URL de una imagen</div>
                         </div>
                     </form>
                 </div>
@@ -96,9 +89,95 @@
             </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/config.js"></script>
-    <script src="/js/candidatos.js"></script>
-</body>
-</html>
+    <script src="/js/layout.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!requireAdmin()) return;
+            cargarCandidatos();
+        });
 
+        async function cargarCandidatos() {
+            try {
+                const response = await fetch('/candidatos', { headers: { 'Accept': 'application/json' } });
+                const candidatos = await response.json();
+                const tbody = document.getElementById('candidatosTable');
+
+                if (candidatos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No hay candidatos registrados</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = candidatos.map(c => `
+                    <tr>
+                        <td>${c.id}</td>
+                        <td>${c.imagen ? `<img src="${c.imagen}" class="candidate-photo" alt="Foto" onerror="this.style.display='none'">` : '<i class="bi bi-person-circle fs-3 text-secondary"></i>'}</td>
+                        <td>${c.documento}</td>
+                        <td>${c.nombre}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="editarCandidato(${c.id})"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarCandidato(${c.id})"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error(error);
+                document.getElementById('candidatosTable').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error al cargar</td></tr>';
+            }
+        }
+
+        function limpiarFormulario() {
+            document.getElementById('candidatoId').value = '';
+            document.getElementById('candidatoDocumento').value = '';
+            document.getElementById('candidatoNombre').value = '';
+            document.getElementById('candidatoImagen').value = '';
+            document.getElementById('modalCandidatoTitle').textContent = 'Nuevo Candidato';
+        }
+
+        async function guardarCandidato() {
+            const id = document.getElementById('candidatoId').value;
+            const documento = document.getElementById('candidatoDocumento').value.trim();
+            const nombre = document.getElementById('candidatoNombre').value.trim();
+            let imagen = document.getElementById('candidatoImagen').value.trim();
+
+            if (!documento || !nombre) { alert('Documento y nombre son obligatorios'); return; }
+
+            try {
+                const response = await fetch(id ? `/candidatos/${id}` : '/candidatos', {
+                    method: id ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ documento, nombre, imagen: imagen || null })
+                });
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('modalCandidato')).hide();
+                    cargarCandidatos();
+                } else { alert('Error: ' + await response.text()); }
+            } catch (error) { alert('Error de conexión'); }
+        }
+
+        async function editarCandidato(id) {
+            try {
+                const c = await (await fetch(`/candidatos/${id}`)).json();
+                document.getElementById('candidatoId').value = c.id;
+                document.getElementById('candidatoDocumento').value = c.documento;
+                document.getElementById('candidatoNombre').value = c.nombre;
+                document.getElementById('candidatoImagen').value = c.imagen || '';
+                document.getElementById('modalCandidatoTitle').textContent = 'Editar Candidato';
+                new bootstrap.Modal(document.getElementById('modalCandidato')).show();
+            } catch (error) { alert('Error al cargar candidato'); }
+        }
+
+        async function eliminarCandidato(id) {
+            if (!confirm('¿Eliminar este candidato?')) return;
+            try {
+                if ((await fetch(`/candidatos/${id}`, { method: 'DELETE' })).ok) cargarCandidatos();
+                else alert('Error al eliminar');
+            } catch (error) { alert('Error de conexión'); }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,190 +1,154 @@
-// Configuración de la API
-const API_BASE_URL = 'http://localhost:8080';
+/**
+ * config.js - API Configuration and Utilities
+ * Configuracion centralizada para peticiones HTTP
+ */
 
-// Utilidad para hacer peticiones HTTP
+const API_BASE_URL = '';
+
+/**
+ * Funcion base para peticiones HTTP con manejo robusto de errores
+ * - Evita cache con cache: 'no-store'
+ * - Maneja respuestas vacias (204 No Content)
+ * - Parsea JSON o texto segun corresponda
+ */
+async function apiRequest(url, options = {}) {
+    const defaultOptions = {
+        method: 'GET',
+        cache: 'no-store',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    };
+
+    const finalOptions = {
+        ...defaultOptions,
+        ...options,
+        headers: { ...defaultOptions.headers, ...(options.headers || {}) }
+    };
+
+    console.log(`[API] ${finalOptions.method} ${url}`);
+
+    const response = await fetch(API_BASE_URL + url, finalOptions);
+
+    // Leer respuesta como texto primero (para manejar vacio o no-JSON)
+    const text = await response.text();
+    let data = null;
+
+    if (text && text.trim()) {
+        try {
+            data = JSON.parse(text);
+        } catch {
+            data = text; // Si no es JSON, devolver como texto
+        }
+    }
+
+    if (!response.ok) {
+        const msg = (data && (data.mensaje || data.message || data.error)) || `Error ${response.status}`;
+        console.error(`[API] Error: ${msg}`);
+        throw new Error(msg);
+    }
+
+    console.log(`[API] OK:`, data);
+    return data;
+}
+
+/**
+ * Objeto API con metodos simplificados
+ */
 const api = {
-    async get(url) {
-        try {
-            console.log(`[API] GET: ${API_BASE_URL}${url}`);
-            const response = await fetch(`${API_BASE_URL}${url}`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                }
-            });
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error(`[API] Error ${response.status}:`, errorText);
-                throw new Error(`Error ${response.status}: ${errorText || response.statusText}`);
-            }
-            
-            const data = await response.json();
-            console.log(`[API] Response:`, data);
-            return data;
-        } catch (error) {
-            console.error('[API] Error en GET:', error);
-            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                throw new Error('No se pudo conectar con el servidor. Verifica que el backend esté corriendo en http://localhost:8080');
-            }
-            throw error;
-        }
-    },
-    async getText(url) {
-        try {
-            console.log(`[API] GET (text): ${API_BASE_URL}${url}`);
-            const response = await fetch(`${API_BASE_URL}${url}`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'text/plain, text/csv, */*'
-                }
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error(`[API] Error ${response.status}:`, errorText);
-                throw new Error(`Error ${response.status}: ${errorText || response.statusText}`);
-            }
-
-            return await response.text();
-        } catch (error) {
-            console.error('[API] Error en GET (text):', error);
-            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                throw new Error('No se pudo conectar con el servidor. Verifica que el backend esté corriendo en http://localhost:8080');
-            }
-            throw error;
-        }
+    get(url) {
+        return apiRequest(url, { method: 'GET' });
     },
 
-    async post(url, data) {
-        try {
-            const response = await fetch(`${API_BASE_URL}${url}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            });
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Error ${response.status}: ${errorText}`);
-            }
-            return await response.json();
-        } catch (error) {
-            console.error('Error en POST:', error);
-            throw error;
-        }
+    post(url, data) {
+        return apiRequest(url, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
     },
 
-    async put(url, data) {
-        try {
-            const response = await fetch(`${API_BASE_URL}${url}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            });
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Error ${response.status}: ${errorText}`);
-            }
-            return await response.json();
-        } catch (error) {
-            console.error('Error en PUT:', error);
-            throw error;
-        }
+    put(url, data) {
+        return apiRequest(url, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
     },
 
-    async delete(url, params = {}, body = null) {
-        try {
-            let fullUrl = url;
-            if (Object.keys(params).length > 0) {
-                const queryString = new URLSearchParams(params).toString();
-                fullUrl = `${url}?${queryString}`;
-            }
-            const options = {
-                method: 'DELETE'
-            };
-            if (body) {
-                options.headers = {
-                    'Content-Type': 'application/json'
-                };
-                options.body = JSON.stringify(body);
-            }
-            const response = await fetch(`${API_BASE_URL}${fullUrl}`, options);
-            if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
-            return response.status === 204 ? null : await response.json();
-        } catch (error) {
-            console.error('Error en DELETE:', error);
-            throw error;
-        }
+    delete(url) {
+        return apiRequest(url, { method: 'DELETE' });
     },
 
-    async patch(url, params = {}) {
-        try {
-            const queryString = new URLSearchParams(params).toString();
-            const fullUrl = queryString ? `${url}?${queryString}` : url;
-            const response = await fetch(`${API_BASE_URL}${fullUrl}`, {
-                method: 'PATCH'
-            });
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Error ${response.status}: ${errorText}`);
-            }
-            return await response.json();
-        } catch (error) {
-            console.error('Error en PATCH:', error);
-            throw error;
-        }
+    patch(url, params = {}) {
+        // PATCH usa query params, no body (segun el backend actual)
+        const queryString = new URLSearchParams(params).toString();
+        const fullUrl = queryString ? `${url}?${queryString}` : url;
+        return apiRequest(fullUrl, { method: 'PATCH' });
+    },
+
+    getText(url) {
+        return fetch(API_BASE_URL + url, {
+            method: 'GET',
+            cache: 'no-store',
+            headers: { 'Accept': 'text/plain' }
+        }).then(r => {
+            if (!r.ok) throw new Error(`Error ${r.status}`);
+            return r.text();
+        });
     }
 };
 
-// Utilidades para mostrar mensajes
-const showAlert = (message, type = 'info') => {
-    // Limpiar alertas anteriores del mismo tipo
-    const existingAlerts = document.querySelectorAll('.alert.position-fixed');
-    existingAlerts.forEach(alert => alert.remove());
-    
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
-    alertDiv.style.zIndex = '9999';
-    alertDiv.style.minWidth = '300px';
-    alertDiv.style.maxWidth = '500px';
-    alertDiv.innerHTML = `
-        <strong>${type === 'danger' ? 'Error' : type === 'success' ? 'Éxito' : type === 'warning' ? 'Advertencia' : 'Información'}:</strong> ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+// =====================================================
+// UTILIDADES DE FORMATO
+// =====================================================
+
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('es-ES');
+}
+
+function formatDateTime(dateString) {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleString('es-ES');
+}
+
+// =====================================================
+// SISTEMA DE ALERTAS
+// =====================================================
+
+function showAlert(message, type = 'info') {
+    let container = document.getElementById('alertContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'alertContainer';
+        container.style.cssText = 'position: fixed; top: 70px; right: 20px; z-index: 9999; max-width: 400px;';
+        document.body.appendChild(container);
+    }
+
+    const alertId = 'alert-' + Date.now();
+    const alertHtml = `
+        <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show shadow" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     `;
-    document.body.appendChild(alertDiv);
-    
-    // Auto-remover después de 5 segundos
+    container.insertAdjacentHTML('beforeend', alertHtml);
+
+    // Auto-cerrar despues de 4 segundos
     setTimeout(() => {
-        if (alertDiv.parentNode) {
-            alertDiv.remove();
+        const alertEl = document.getElementById(alertId);
+        if (alertEl) {
+            alertEl.classList.remove('show');
+            setTimeout(() => alertEl.remove(), 150);
         }
-    }, 5000);
-};
+    }, 4000);
+}
 
-// Formatear fechas
-const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    });
-};
+// =====================================================
+// FUNCION BASE PARA LIMPIAR FORMULARIOS
+// =====================================================
 
-const formatDateTime = (dateString) => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleString('es-ES', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-};
-
+function limpiarFormulario() {
+    // Sobrescrita por cada modulo especifico
+    console.log('limpiarFormulario base llamada');
+}

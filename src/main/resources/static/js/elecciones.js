@@ -1,236 +1,316 @@
+/**
+ * elecciones.js - Gestion completa de Elecciones
+ * 
+ * Campos OBLIGATORIOS segun EleccionRequestDTO:
+ * - tipoEleccionId, tipoId, procesoId (Long)
+ * - fechaInicio, fechaFinaliza (LocalDateTime)
+ * 
+ * Campos OPCIONALES:
+ * - programaId, sedeId, facultadId (Long, nullable)
+ * - nombre, descripcion (String)
+ */
+
 let modalEleccion;
 let editMode = false;
 
 document.addEventListener('DOMContentLoaded', () => {
-    modalEleccion = new bootstrap.Modal(document.getElementById('modalEleccion'));
+    const modalEl = document.getElementById('modalEleccion');
+    if (modalEl) {
+        modalEleccion = new bootstrap.Modal(modalEl);
+        modalEl.addEventListener('hidden.bs.modal', limpiarFormulario);
+    }
     cargarCatalogos();
     cargarElecciones();
-    document.getElementById('modalEleccion').addEventListener('hidden.bs.modal', () => {
-        document.getElementById('formEleccion').reset();
-        document.getElementById('eleccionId').value = '';
-        editMode = false;
-        document.getElementById('modalEleccionTitle').textContent = 'Nueva Elección';
-    });
 });
 
+/**
+ * Cargar catalogos para los selects
+ */
 async function cargarCatalogos() {
     try {
-        const [tiposEleccion, tipos, procesos, programas, sedes, facultades] = await Promise.all([
+        const [tiposEleccion, tipos, procesos, sedes, facultades, programas] = await Promise.all([
             api.get('/catalogos/tipos-eleccion'),
             api.get('/catalogos/tipos'),
             api.get('/procesos'),
-            api.get('/catalogos/programas'),
             api.get('/catalogos/sedes'),
-            api.get('/catalogos/facultades')
+            api.get('/catalogos/facultades'),
+            api.get('/catalogos/programas')
         ]);
 
-        llenarSelect('eleccionTipoEleccionId', tiposEleccion, 'Seleccione tipo elección');
+        llenarSelect('eleccionTipoEleccionId', tiposEleccion, 'Seleccione tipo eleccion');
         llenarSelect('eleccionTipoId', tipos, 'Seleccione tipo');
         llenarSelect('eleccionProcesoId', procesos, 'Seleccione proceso');
-        llenarSelect('eleccionProgramaId', programas, 'Seleccione programa');
-        llenarSelect('eleccionSedeId', sedes, 'Seleccione sede');
-        llenarSelect('eleccionFacultadId', facultades, 'Seleccione facultad');
+        llenarSelect('eleccionSedeId', sedes, 'Todas las sedes');
+        llenarSelect('eleccionFacultadId', facultades, 'Todas las facultades');
+        llenarSelect('eleccionProgramaId', programas, 'Todos los programas');
+
+        console.log('[Elecciones] Catalogos cargados');
     } catch (error) {
-        console.error('Error cargando catálogos:', error);
+        console.error('Error al cargar catalogos:', error);
+        showAlert('Error al cargar catalogos: ' + error.message, 'danger');
     }
 }
 
-function llenarSelect(id, items, placeholder) {
-    const select = document.getElementById(id);
-    select.innerHTML = `<option value="">${placeholder}</option>` +
-        items.map(item => `<option value="${item.id}">${item.nombre || item.descripcion || item.id}</option>`).join('');
-}
-
-async function cargarElecciones() {
-    try {
-        const elecciones = await api.get('/elecciones');
-        mostrarElecciones(elecciones);
-    } catch (error) {
-        showAlert('Error al cargar las elecciones: ' + error.message, 'danger');
-        document.getElementById('eleccionesTable').innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error al cargar datos</td></tr>';
-    }
-}
-
-async function cargarEleccionesActivas() {
-    try {
-        const elecciones = await api.get('/elecciones/activas');
-        mostrarElecciones(elecciones);
-    } catch (error) {
-        showAlert('Error al cargar las elecciones activas: ' + error.message, 'danger');
-    }
-}
-
-async function cargarEleccionesAbiertas() {
-    try {
-        const elecciones = await api.get('/elecciones/abiertas');
-        mostrarElecciones(elecciones);
-    } catch (error) {
-        showAlert('Error al cargar las elecciones abiertas: ' + error.message, 'danger');
-    }
-}
-
-async function filtrarPorEstado() {
-    const estado = document.getElementById('filtroEstado').value;
-    if (!estado) {
-        cargarElecciones();
+function llenarSelect(selectId, items, placeholder) {
+    const select = document.getElementById(selectId);
+    if (!select) {
+        console.warn('Select no encontrado:', selectId);
         return;
     }
+
+    const options = items.map(item => {
+        const id = item.id;
+        const nombre = item.nombre || item.descripcion || `Item ${id}`;
+        return `<option value="${id}">${nombre}</option>`;
+    }).join('');
+
+    select.innerHTML = `<option value="">${placeholder}</option>` + options;
+}
+
+/**
+ * Cargar listado de elecciones
+ */
+async function cargarElecciones() {
+    console.log('[Elecciones] Cargando lista...');
+    const tbody = document.getElementById('eleccionesTable');
+
+    if (!tbody) {
+        console.error('[Elecciones] Tabla no encontrada: eleccionesTable');
+        return;
+    }
+
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center"><div class="spinner-border spinner-border-sm"></div> Cargando...</td></tr>';
+
     try {
-        const elecciones = await api.get(`/elecciones/filtro/estado?estado=${estado}`);
-        mostrarElecciones(elecciones);
+        const elecciones = await api.get('/elecciones');
+        console.log('[Elecciones] Recibidas:', elecciones?.length || 0, 'elecciones');
+        mostrarElecciones(elecciones || []);
     } catch (error) {
-        showAlert('Error al filtrar: ' + error.message, 'danger');
+        console.error('[Elecciones] Error al cargar:', error);
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error al cargar datos</td></tr>';
+        showAlert('Error al cargar elecciones: ' + error.message, 'danger');
     }
 }
 
 function mostrarElecciones(elecciones) {
     const tbody = document.getElementById('eleccionesTable');
-    if (elecciones.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay elecciones registradas</td></tr>';
+
+    if (!elecciones || elecciones.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">No hay elecciones registradas</td></tr>';
         return;
     }
-    tbody.innerHTML = elecciones.map(eleccion => {
+
+    console.log('[Elecciones] Renderizando', elecciones.length, 'elecciones');
+
+    tbody.innerHTML = elecciones.map(e => {
         const estadoBadge = {
             'ACTIVA': 'bg-success',
             'ABIERTO': 'bg-primary',
             'CERRADO': 'bg-secondary'
-        }[eleccion.estado] || 'bg-secondary';
-        
-        return `
-            <tr>
-                <td>${eleccion.id}</td>
-                <td>${eleccion.nombre || '-'}</td>
-                <td><span class="badge ${estadoBadge}">${eleccion.estado || '-'}</span></td>
-                <td>${formatDateTime(eleccion.fechaInicio)}</td>
-                <td>${formatDateTime(eleccion.fechaFinaliza)}</td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick="editarEleccion(${eleccion.id})">
-                        <i class="bi bi-pencil"></i> Editar
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarEleccion(${eleccion.id}, '${eleccion.nombre || 'Elección'}')">
-                        <i class="bi bi-trash"></i> Eliminar
-                    </button>
-                    <a href="/resultados.html?eleccionId=${eleccion.id}" class="btn btn-sm btn-outline-info">
-                        <i class="bi bi-bar-chart"></i> Resultados
-                    </a>
-                    <div class="btn-group btn-group-sm mt-2" role="group" aria-label="Cambiar estado">
-                        <button class="btn btn-outline-secondary${eleccion.estado === 'ACTIVA' ? ' active' : ''}" title="Marcar ACTIVA" onclick="cambiarEstadoEleccion(${eleccion.id}, 'ACTIVA')" ${eleccion.estado === 'ACTIVA' ? 'disabled' : ''}>
-                            ACTIVA
-                        </button>
-                        <button class="btn btn-outline-success${eleccion.estado === 'ABIERTO' ? ' active' : ''}" title="Marcar ABIERTO" onclick="cambiarEstadoEleccion(${eleccion.id}, 'ABIERTO')" ${eleccion.estado === 'ABIERTO' ? 'disabled' : ''}>
-                            ABIERTO
-                        </button>
-                        <button class="btn btn-outline-dark${eleccion.estado === 'CERRADO' ? ' active' : ''}" title="Marcar CERRADO" onclick="cambiarEstadoEleccion(${eleccion.id}, 'CERRADO')" ${eleccion.estado === 'CERRADO' ? 'disabled' : ''}>
-                            CERRADO
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
+        }[e.estado] || 'bg-secondary';
+
+        const fechaInicio = e.fechaInicio ? new Date(e.fechaInicio).toLocaleString('es-ES') : '-';
+        const fechaFin = e.fechaFinaliza ? new Date(e.fechaFinaliza).toLocaleString('es-ES') : '-';
+
+        // Botones de control de votacion segun estado
+        let botonesVotacion = '';
+        if (e.estado === 'ACTIVA') {
+            botonesVotacion = '<button class="btn btn-sm btn-success me-1" onclick="abrirVotacion(' + e.id + ')" title="Abrir Votacion"><i class="bi bi-unlock"></i></button>';
+        } else if (e.estado === 'ABIERTO') {
+            botonesVotacion = '<button class="btn btn-sm btn-danger me-1" onclick="cerrarVotacion(' + e.id + ')" title="Cerrar Votacion"><i class="bi bi-lock"></i></button>';
+        }
+
+        const nombreEscapado = (e.nombre || 'Eleccion').replace(/'/g, "\\'");
+
+        return '<tr data-id="' + e.id + '">' +
+            '<td>' + e.id + '</td>' +
+            '<td>' + (e.nombre || '-') + '</td>' +
+            '<td>' + (e.procesoId || '-') + '</td>' +
+            '<td>' + (e.tipoEleccionId || '-') + '</td>' +
+            '<td><span class="badge ' + estadoBadge + '">' + (e.estado || 'ACTIVA') + '</span></td>' +
+            '<td>' + fechaInicio + '</td>' +
+            '<td>' + fechaFin + '</td>' +
+            '<td>' +
+            botonesVotacion +
+            '<button class="btn btn-sm btn-warning me-1" onclick="editarEleccion(' + e.id + ')" title="Editar"><i class="bi bi-pencil"></i></button>' +
+            '<button class="btn btn-sm btn-danger" onclick="eliminarEleccion(' + e.id + ', \'' + nombreEscapado + '\')" title="Eliminar"><i class="bi bi-trash"></i></button>' +
+            '</td>' +
+            '</tr>';
     }).join('');
 }
 
+/**
+ * Limpiar formulario
+ */
+function limpiarFormulario() {
+    const form = document.getElementById('formEleccion');
+    if (form) form.reset();
+
+    document.getElementById('eleccionId').value = '';
+    document.getElementById('modalEleccionTitle').textContent = 'Nueva Eleccion';
+    editMode = false;
+
+    // Fechas por defecto
+    const now = new Date();
+    const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    const formatForInput = (d) => d.toISOString().slice(0, 16);
+
+    const fechaInicioEl = document.getElementById('eleccionFechaInicio');
+    const fechaFinEl = document.getElementById('eleccionFechaFin');
+
+    if (fechaInicioEl) fechaInicioEl.value = formatForInput(now);
+    if (fechaFinEl) fechaFinEl.value = formatForInput(nextWeek);
+}
+
+/**
+ * Editar eleccion existente
+ */
 async function editarEleccion(id) {
     try {
-        const eleccion = await api.get(`/elecciones/${id}`);
+        const eleccion = await api.get('/elecciones/' + id);
+
         document.getElementById('eleccionId').value = eleccion.id;
         document.getElementById('eleccionNombre').value = eleccion.nombre || '';
-        document.getElementById('eleccionDescripcion').value = eleccion.descripcion || '';
-        document.getElementById('eleccionAnio').value = eleccion.anio || '';
-        document.getElementById('eleccionSemestre').value = eleccion.semestre || '';
+        document.getElementById('eleccionProcesoId').value = eleccion.procesoId || '';
         document.getElementById('eleccionTipoEleccionId').value = eleccion.tipoEleccionId || '';
         document.getElementById('eleccionTipoId').value = eleccion.tipoId || '';
-        document.getElementById('eleccionProcesoId').value = eleccion.procesoId || '';
-        document.getElementById('eleccionProgramaId').value = eleccion.programaId || '';
         document.getElementById('eleccionSedeId').value = eleccion.sedeId || '';
         document.getElementById('eleccionFacultadId').value = eleccion.facultadId || '';
-        
+        document.getElementById('eleccionProgramaId').value = eleccion.programaId || '';
+
+        // Fechas
         if (eleccion.fechaInicio) {
-            const fechaInicio = new Date(eleccion.fechaInicio);
-            document.getElementById('eleccionFechaInicio').value = fechaInicio.toISOString().slice(0, 16);
+            document.getElementById('eleccionFechaInicio').value = eleccion.fechaInicio.substring(0, 16);
         }
         if (eleccion.fechaFinaliza) {
-            const fechaFin = new Date(eleccion.fechaFinaliza);
-            document.getElementById('eleccionFechaFin').value = fechaFin.toISOString().slice(0, 16);
+            document.getElementById('eleccionFechaFin').value = eleccion.fechaFinaliza.substring(0, 16);
         }
-        
+
         editMode = true;
-        document.getElementById('modalEleccionTitle').textContent = 'Editar Elección';
+        document.getElementById('modalEleccionTitle').textContent = 'Editar Eleccion';
         modalEleccion.show();
     } catch (error) {
-        showAlert('Error al cargar la elección: ' + error.message, 'danger');
+        showAlert('Error al cargar eleccion: ' + error.message, 'danger');
     }
 }
 
+/**
+ * Guardar eleccion (crear o actualizar)
+ */
 async function guardarEleccion() {
     const id = document.getElementById('eleccionId').value;
     const nombre = document.getElementById('eleccionNombre').value.trim();
-    const descripcion = document.getElementById('eleccionDescripcion').value.trim();
-    const anio = document.getElementById('eleccionAnio').value ? parseInt(document.getElementById('eleccionAnio').value) : null;
-    const semestre = document.getElementById('eleccionSemestre').value ? parseInt(document.getElementById('eleccionSemestre').value) : null;
-    const tipoEleccionId = document.getElementById('eleccionTipoEleccionId').value ? parseInt(document.getElementById('eleccionTipoEleccionId').value) : null;
-    const tipoId = document.getElementById('eleccionTipoId').value ? parseInt(document.getElementById('eleccionTipoId').value) : null;
-    const procesoId = document.getElementById('eleccionProcesoId').value ? parseInt(document.getElementById('eleccionProcesoId').value) : null;
-    const programaId = document.getElementById('eleccionProgramaId').value ? parseInt(document.getElementById('eleccionProgramaId').value) : null;
-    const sedeId = document.getElementById('eleccionSedeId').value ? parseInt(document.getElementById('eleccionSedeId').value) : null;
-    const facultadId = document.getElementById('eleccionFacultadId').value ? parseInt(document.getElementById('eleccionFacultadId').value) : null;
-    const fechaInicio = document.getElementById('eleccionFechaInicio').value;
-    const fechaFinaliza = document.getElementById('eleccionFechaFin').value;
 
-    if (!nombre || !fechaInicio || !fechaFinaliza) {
-        showAlert('Todos los campos son obligatorios', 'warning');
-        return;
+    const procesoIdStr = document.getElementById('eleccionProcesoId').value;
+    const tipoEleccionIdStr = document.getElementById('eleccionTipoEleccionId').value;
+    const tipoIdStr = document.getElementById('eleccionTipoId').value;
+    const fechaInicioStr = document.getElementById('eleccionFechaInicio').value;
+    const fechaFinStr = document.getElementById('eleccionFechaFin').value;
+
+    const sedeIdStr = document.getElementById('eleccionSedeId').value;
+    const facultadIdStr = document.getElementById('eleccionFacultadId').value;
+    const programaIdStr = document.getElementById('eleccionProgramaId').value;
+
+    // Validaciones
+    if (!nombre) return showAlert('El nombre es obligatorio', 'warning');
+    if (!procesoIdStr) return showAlert('Debe seleccionar un Proceso', 'warning');
+    if (!tipoEleccionIdStr) return showAlert('Debe seleccionar un Tipo de Eleccion', 'warning');
+    if (!tipoIdStr) return showAlert('Debe seleccionar un Tipo', 'warning');
+    if (!fechaInicioStr || !fechaFinStr) return showAlert('Las fechas son obligatorias', 'warning');
+
+    if (new Date(fechaInicioStr) >= new Date(fechaFinStr)) {
+        return showAlert('La fecha de inicio debe ser anterior a la fecha de fin', 'warning');
     }
 
     const data = {
-        nombre,
-        descripcion: descripcion || null,
-        anio,
-        semestre,
-        tipoEleccionId,
-        tipoId,
-        procesoId,
-        programaId,
-        sedeId,
-        facultadId,
-        fechaInicio,
-        fechaFinaliza
+        nombre: nombre,
+        descripcion: nombre,
+        procesoId: parseInt(procesoIdStr, 10),
+        tipoEleccionId: parseInt(tipoEleccionIdStr, 10),
+        tipoId: parseInt(tipoIdStr, 10),
+        sedeId: sedeIdStr ? parseInt(sedeIdStr, 10) : null,
+        facultadId: facultadIdStr ? parseInt(facultadIdStr, 10) : null,
+        programaId: programaIdStr ? parseInt(programaIdStr, 10) : null,
+        anio: new Date().getFullYear(),
+        semestre: 1,
+        fechaInicio: fechaInicioStr + ':00',
+        fechaFinaliza: fechaFinStr + ':00'
     };
 
     try {
         if (editMode && id) {
-            await api.put(`/elecciones/${id}`, data);
-            showAlert('Elección actualizada correctamente', 'success');
+            await api.put('/elecciones/' + id, data);
+            showAlert('Eleccion actualizada correctamente', 'success');
         } else {
             await api.post('/elecciones', data);
-            showAlert('Elección creada correctamente', 'success');
+            showAlert('Eleccion creada correctamente', 'success');
         }
+
         modalEleccion.hide();
-        cargarElecciones();
+
+        // Recargar lista
+        await cargarElecciones();
     } catch (error) {
+        console.error('Error al guardar:', error);
         showAlert('Error al guardar: ' + error.message, 'danger');
     }
 }
 
+/**
+ * Eliminar eleccion
+ */
 async function eliminarEleccion(id, nombre) {
-    if (!confirm(`¿Está seguro de eliminar/desactivar la elección "${nombre}"?`)) return;
+    if (!confirm('Esta seguro de eliminar la eleccion "' + nombre + '"?')) return;
+
+    console.log('[Elecciones] Eliminando ID:', id);
+
     try {
-        await api.delete(`/elecciones/${id}`);
-        showAlert('Elección eliminada/desactivada correctamente', 'success');
-        cargarElecciones();
+        await api.delete('/elecciones/' + id);
+        console.log('[Elecciones] DELETE exitoso para ID:', id);
+        showAlert('Eleccion eliminada correctamente', 'success');
+
+        // IMPORTANTE: Recargar lista inmediatamente
+        await cargarElecciones();
+
+        // Verificacion: el ID ya no debe estar en la tabla
+        const fila = document.querySelector('tr[data-id="' + id + '"]');
+        if (fila) {
+            console.warn('[Elecciones] ADVERTENCIA: La fila sigue visible, eliminandola manualmente');
+            fila.remove();
+        }
     } catch (error) {
+        console.error('[Elecciones] Error al eliminar:', error);
         showAlert('Error al eliminar: ' + error.message, 'danger');
     }
 }
 
-async function cambiarEstadoEleccion(id, estado) {
+/**
+ * Abrir votacion - cambia estado de ACTIVA a ABIERTO
+ */
+async function abrirVotacion(id) {
+    if (!confirm('Esta seguro de ABRIR la votacion? Los estudiantes podran votar.')) return;
+
     try {
-        const estadoUpper = estado.toUpperCase();
-        await api.patch(`/elecciones/${id}/estado`, { estado: estadoUpper });
-        showAlert(`Estado actualizado a ${estadoUpper}`, 'success');
-        cargarElecciones();
+        await api.patch('/elecciones/' + id + '/estado', { estado: 'ABIERTO' });
+        showAlert('Votacion ABIERTA correctamente', 'success');
+        await cargarElecciones();
     } catch (error) {
-        showAlert('No se pudo cambiar el estado: ' + error.message, 'danger');
+        showAlert('Error al abrir votacion: ' + error.message, 'danger');
     }
 }
 
+/**
+ * Cerrar votacion - cambia estado de ABIERTO a CERRADO
+ */
+async function cerrarVotacion(id) {
+    if (!confirm('Esta seguro de CERRAR la votacion? Los estudiantes ya no podran votar.')) return;
+
+    try {
+        await api.patch('/elecciones/' + id + '/estado', { estado: 'CERRADO' });
+        showAlert('Votacion CERRADA correctamente', 'success');
+        await cargarElecciones();
+    } catch (error) {
+        showAlert('Error al cerrar votacion: ' + error.message, 'danger');
+    }
+}
