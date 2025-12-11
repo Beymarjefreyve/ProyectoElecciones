@@ -1,14 +1,10 @@
-let modalProceso;
 let editMode = false;
 
 document.addEventListener('DOMContentLoaded', () => {
     modalProceso = new bootstrap.Modal(document.getElementById('modalProceso'));
     cargarProcesos();
     document.getElementById('modalProceso').addEventListener('hidden.bs.modal', () => {
-        document.getElementById('formProceso').reset();
-        document.getElementById('procesoId').value = '';
-        editMode = false;
-        document.getElementById('modalProcesoTitle').textContent = 'Nuevo Proceso';
+        limpiarFormulario();
     });
 });
 
@@ -22,21 +18,14 @@ async function cargarProcesos() {
     }
 }
 
-async function cargarProcesosActivos() {
-    try {
-        const procesos = await api.get('/procesos/activos');
-        mostrarProcesos(procesos);
-    } catch (error) {
-        showAlert('Error al cargar los procesos activos: ' + error.message, 'danger');
-    }
-}
-
 function mostrarProcesos(procesos) {
     const tbody = document.getElementById('procesosTable');
+
     if (procesos.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay procesos registrados</td></tr>';
         return;
     }
+
     tbody.innerHTML = procesos.map(proceso => `
         <tr>
             <td>${proceso.id}</td>
@@ -110,13 +99,28 @@ async function guardarProceso() {
 }
 
 async function eliminarProceso(id, descripcion) {
-    if (!confirm(`¿Está seguro de eliminar el proceso "${descripcion}"?`)) return;
-    try {
-        await api.delete(`/procesos/${id}`);
-        showAlert('Proceso eliminado correctamente', 'success');
-        cargarProcesos();
-    } catch (error) {
-        showAlert('Error al eliminar: ' + error.message, 'danger');
-    }
+
+    mostrarConfirmacion(
+        `¿Está seguro de eliminar el proceso <b>"${descripcion}"</b>?`,
+        async () => {
+
+            try {
+                await api.delete(`/procesos/${id}`);
+                showAlert('Proceso eliminado correctamente', 'success');
+                cargarProcesos();
+
+            } catch (error) {
+                console.error('[Procesos] Error al eliminar:', error);
+
+                const msg = error.message || '';
+
+                if (msg.includes('foreign key') || msg.includes('llave foránea') || msg.includes('eleccion')) {
+                    showAlert('No se puede eliminar el proceso porque tiene elecciones asociadas.', 'warning');
+                } else {
+                    showAlert('Error al eliminar: ' + msg, 'danger');
+                }
+            }
+        }
+    );
 }
 

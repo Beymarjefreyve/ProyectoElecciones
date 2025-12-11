@@ -99,14 +99,27 @@ async function guardarCandidato() {
 }
 
 
-async function eliminarCandidato(id, nombre) {
-    if (!confirm(`¿Está seguro de eliminar el candidato "${nombre}"?`)) return;
-    try {
-        await api.delete(`/candidatos/${id}`);
-        showAlert('Candidato eliminado correctamente', 'success');
-        cargarCandidatos();
-    } catch (error) {
-        showAlert('Error al eliminar: ' + error.message, 'danger');
-    }
+async function eliminarCandidato(id) {
+
+    mostrarConfirmacion(
+        '¿Está seguro de eliminar este candidato?',
+        async () => {
+            try {
+                const response = await fetch(`/candidatos/${id}`, { method: 'DELETE' });
+
+                if (response.ok) {
+                    showAlert('Candidato eliminado correctamente', 'success');
+                    cargarCandidatos();
+                } else {
+                    showAlert('Error al eliminar, el candidado está en un proceso electoral', 'danger');
+                }
+
+            } catch (error) {
+                showAlert('Error de conexión', 'danger');
+            }
+        }
+    );
 }
+
+	
 

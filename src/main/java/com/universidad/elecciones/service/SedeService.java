@@ -5,7 +5,6 @@ import com.universidad.elecciones.dto.SedeResponseDTO;
 import com.universidad.elecciones.entity.Sede;
 import com.universidad.elecciones.repository.EleccionRepository;
 import com.universidad.elecciones.repository.SedeRepository;
-import com.universidad.elecciones.repository.SolicitudRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,9 +22,7 @@ public class SedeService {
     private final SedeRepository repo;
 	@Autowired
     private final EleccionRepository eleccionRepo;
-	@Autowired
-    private final SolicitudRepository solicitudRepo;
-
+	
     // ===============================================
     // LISTAR SEDES
     // ===============================================
@@ -70,9 +67,6 @@ public class SedeService {
             throw new RuntimeException("No se puede eliminar la sede porque está asociada a elecciones");
         }
         
-        if (!solicitudRepo.findBySedeId(id).isEmpty()) {
-            throw new RuntimeException("No se puede eliminar la sede porque está asociada a solicitudes");
-        }
         
         repo.delete(sede);
     }

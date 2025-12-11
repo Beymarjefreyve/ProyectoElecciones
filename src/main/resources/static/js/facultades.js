@@ -82,16 +82,19 @@ async function guardarFacultad() {
 }
 
 async function eliminarFacultad(id, nombre) {
-    if (!confirm(`¿Está seguro de eliminar la facultad "${nombre}"?`)) {
-        return;
-    }
 
-    try {
-        await api.delete(`/catalogos/facultades/${id}`);
-        showAlert('Facultad eliminada correctamente', 'success');
-        cargarFacultades();
-    } catch (error) {
-        showAlert('Error al eliminar: ' + error.message, 'danger');
-    }
+    mostrarConfirmacion(
+        `¿Está seguro de eliminar la facultad <b>"${nombre}"</b>?`,
+        async () => {
+            try {
+                await api.delete(`/catalogos/facultades/${id}`);
+                showAlert('Facultad eliminada correctamente', 'success');
+                cargarFacultades();
+            } catch (error) {
+                showAlert('Error al eliminar: ' + error.message, 'danger');
+            }
+        }
+    );
 }
+
 

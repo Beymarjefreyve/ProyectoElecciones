@@ -141,9 +141,12 @@
             const id = document.getElementById('candidatoId').value;
             const documento = document.getElementById('candidatoDocumento').value.trim();
             const nombre = document.getElementById('candidatoNombre').value.trim();
-            let imagen = document.getElementById('candidatoImagen').value.trim();
+            const imagen = document.getElementById('candidatoImagen').value.trim();
 
-            if (!documento || !nombre) { alert('Documento y nombre son obligatorios'); return; }
+            if (!documento || !nombre) {
+                showAlert('Documento y nombre son obligatorios', 'warning');
+                return;
+            }
 
             try {
                 const response = await fetch(id ? `/candidatos/${id}` : '/candidatos', {
@@ -151,12 +154,25 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ documento, nombre, imagen: imagen || null })
                 });
-                if (response.ok) {
-                    bootstrap.Modal.getInstance(document.getElementById('modalCandidato')).hide();
-                    cargarCandidatos();
-                } else { alert('Error: ' + await response.text()); }
-            } catch (error) { alert('Error de conexión'); }
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    showAlert(error.message || 'Error al guardar candidato', 'danger');
+                    return;
+                }
+
+                bootstrap.Modal.getInstance(
+                    document.getElementById('modalCandidato')
+                ).hide();
+
+                showAlert('Candidato guardado correctamente', 'success');
+                cargarCandidatos();
+
+            } catch (error) {
+                showAlert('Error de conexión con el servidor', 'danger');
+            }
         }
+
 
         async function editarCandidato(id) {
             try {
@@ -171,13 +187,46 @@
         }
 
         async function eliminarCandidato(id) {
-            if (!confirm('¿Eliminar este candidato?')) return;
-            try {
-                if ((await fetch(`/candidatos/${id}`, { method: 'DELETE' })).ok) cargarCandidatos();
-                else alert('Error al eliminar');
-            } catch (error) { alert('Error de conexión'); }
+
+            mostrarConfirmacion(
+                '¿Está seguro de eliminar este candidato?',
+                async () => {
+                    try {
+                        const response = await fetch(`/candidatos/${id}`, { method: 'DELETE' });
+
+                        if (response.ok) {
+                            showAlert('Candidato eliminado correctamente', 'success');
+                            cargarCandidatos();
+                        } else {
+                            showAlert('Error al eliminar, el candidado está en un proceso electoral', 'danger');
+                        }
+
+                    } catch (error) {
+                        showAlert('Error de conexión', 'danger');
+                    }
+                }
+            );
         }
+
     </script>
+    <!-- Modal de Confirmación Global -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar acción</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="confirmMessage">
+                ¿Está seguro?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmYes">Aceptar</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 
 </html>

@@ -17,7 +17,7 @@ async function cargarVotantes() {
         if (!tbody) return;
 
         if (votantes.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay votantes registrados</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay votantes registrados</td></tr>';
             return;
         }
 
@@ -28,7 +28,6 @@ async function cargarVotantes() {
                     <td>${v.id}</td>
                     <td>${v.documento || '-'}</td>
                     <td>${v.nombre || '-'}</td>
-                    <td>${v.email || '-'}</td>
                     <td><span class="badge bg-info">${v.rol || 'ESTUDIANTE'}</span></td>
                     <td><span class="badge ${estadoBadge}">${v.estado || 'ACTIVO'}</span></td>
                     <td>
@@ -42,7 +41,7 @@ async function cargarVotantes() {
         console.error('Error cargando votantes:', error);
         const tbody = document.getElementById('votantesTable');
         if (tbody) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error al cargar datos</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error al cargar datos</td></tr>';
         }
         showAlert('Error al cargar votantes: ' + error.message, 'danger');
     }
@@ -74,12 +73,38 @@ async function editarVotante(id) {
 }
 
 async function eliminarVotante(id, nombre) {
-    if (!confirm(`¿Está seguro de eliminar el votante "${nombre}"?`)) return;
-    try {
-        await api.delete(`/votantes/${id}`);
-        showAlert('Votante eliminado correctamente', 'success');
-        cargarVotantes();
-    } catch (error) {
-        showAlert('Error al eliminar: ' + error.message, 'danger');
-    }
+
+    mostrarConfirmacion(
+        `¿Está seguro de eliminar el votante <b>"${nombre}"</b>?`,
+        async () => {
+
+            try {
+                await api.delete(`/votantes/${id}`);
+                showAlert('Votante eliminado correctamente', 'success');
+                cargarVotantes();
+
+            } catch (error) {
+                console.error('[Votantes] Error al eliminar:', error);
+
+                const msg = error.message || '';
+
+                if (
+                    msg.includes('foreign key') ||
+                    msg.includes('llave foránea') ||
+                    msg.includes('voto') ||
+                    msg.includes('vot')
+                ) {
+                    showAlert(
+                        'No se puede eliminar el votante porque se encuentra asociado a un censo.',
+                        'warning'
+                    );
+                } else {
+                    showAlert('Error al eliminar: ' + msg, 'danger');
+                }
+            }
+
+        }
+    );
+
 }
+

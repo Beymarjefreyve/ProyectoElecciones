@@ -95,17 +95,21 @@ async function guardarPrograma() {
     }
 }
 
-async function eliminarPrograma(id, nombre) {
-    if (!confirm(`¿Está seguro de eliminar el programa "${nombre}"?`)) {
-        return;
-    }
 
-    try {
-        await api.delete(`/catalogos/programas/${id}`);
-        showAlert('Programa eliminado correctamente', 'success');
-        cargarProgramas();
-    } catch (error) {
-        showAlert('Error al eliminar: ' + error.message, 'danger');
-    }
+async function eliminarPrograma(id, nombre) {
+
+    mostrarConfirmacion(
+        `¿Está seguro de eliminar el programa <b>"${nombre}"</b>?`,
+        async () => {
+            try {
+                await api.delete(`/catalogos/programas/${id}`);
+                showAlert('Programa eliminado correctamente', 'success');
+                cargarProgramas();
+            } catch (error) {
+                showAlert('Error al eliminar: ' + error.message, 'danger');
+            }
+        }
+    );
 }
+
 
