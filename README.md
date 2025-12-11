@@ -1,4 +1,4 @@
-# PROYECTO ELECCIONES (ELECCIONESUNI)
+# PROYECTO ELECCIONES
 
 ## 1. Introducción y Propósito del Sistema
 El sistema **EleccionesUni** es una solución de software integral diseñada para la gestión, administración y auditoría de procesos electorales en el ámbito universitario. Su objetivo principal es garantizar la transparencia, seguridad y eficiencia en la configuración de elecciones, el empadronamiento de votantes (censo), la inscripción de candidatos, la emisión de sufragios y el cómputo final de resultados.
@@ -104,3 +104,4 @@ El proyecto incluye documentación interactiva generada con la especificación O
 
 ---
 *Documentación generada para propósitos académicos y de desarrollo.*
+
