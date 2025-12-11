@@ -31,7 +31,6 @@ async function cargarVotantes() {
                     <td><span class="badge bg-info">${v.rol || 'ESTUDIANTE'}</span></td>
                     <td><span class="badge ${estadoBadge}">${v.estado || 'ACTIVO'}</span></td>
                     <td>
-                        <button class="btn btn-sm btn-warning" onclick="editarVotante(${v.id})"><i class="bi bi-pencil"></i></button>
                         <button class="btn btn-sm btn-danger" onclick="eliminarVotante(${v.id}, '${v.nombre || ''}')"><i class="bi bi-trash"></i></button>
                     </td>
                 </tr>
@@ -47,30 +46,7 @@ async function cargarVotantes() {
     }
 }
 
-async function editarVotante(id) {
-    try {
-        const votante = await api.get(`/votantes/${id}`);
-        // Si hay modal de edición, llenar los campos
-        const docField = document.getElementById('votanteDocumento');
-        const nombreField = document.getElementById('votanteNombre');
-        const idField = document.getElementById('votanteId');
 
-        if (docField) docField.value = votante.documento || '';
-        if (nombreField) nombreField.value = votante.nombre || '';
-        if (idField) idField.value = votante.id;
-
-        const modal = document.getElementById('modalVotante');
-        if (modal) {
-            const title = document.getElementById('modalVotanteTitle');
-            if (title) title.textContent = 'Editar Votante';
-            new bootstrap.Modal(modal).show();
-        } else {
-            showAlert('Votante ID: ' + id + ' - ' + votante.nombre, 'info');
-        }
-    } catch (error) {
-        showAlert('Error al cargar el votante: ' + error.message, 'danger');
-    }
-}
 
 async function eliminarVotante(id, nombre) {
 
