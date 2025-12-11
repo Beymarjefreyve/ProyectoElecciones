@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class VotanteController {
 
-	@Autowired
+    @Autowired
     VotanteService service;
 
     // ===============================================
@@ -90,16 +90,9 @@ public class VotanteController {
     public ResponseEntity<Map<String, Object>> validarSiPuedeVotar(
             @RequestParam String documento,
             @RequestParam Long eleccionId) {
-        boolean puedeVotar = service.validarSiPuedeVotar(documento, eleccionId);
-        
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = service.validarSiPuedeVotar(documento, eleccionId);
         response.put("documento", documento);
         response.put("eleccionId", eleccionId);
-        response.put("puedeVotar", puedeVotar);
-        response.put("mensaje", puedeVotar 
-            ? "El votante está habilitado para votar en esta elección" 
-            : "El votante NO está habilitado para votar en esta elección");
-        
         return ResponseEntity.ok(response);
     }
 }

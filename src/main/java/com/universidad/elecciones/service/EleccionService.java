@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.universidad.elecciones.dto.EleccionRequestDTO;
 import com.universidad.elecciones.dto.EleccionResponseDTO;
 import com.universidad.elecciones.entity.Eleccion;
+import com.universidad.elecciones.entity.Votante;
 import com.universidad.elecciones.repository.*;
 
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,10 @@ public class EleccionService {
     private final ProcesoRepository procesoRepo;
     @Autowired
     private final FacultadRepository facultadRepo;
+    @Autowired
+    private final VotanteRepository votanteRepo;
+    @Autowired
+    private final CensoRepository censoRepo;
 
     // ========================================================
     // CREAR ELECCIÓN
@@ -313,6 +318,65 @@ public class EleccionService {
                 .stream()
                 .map(this::buildDTO)
                 .collect(Collectors.toList());
+    }
+
+    // ========================================================
+    // LISTAR ELECCIONES ABIERTAS PARA UN VOTANTE ESPECÍFICO
+    // Filtra por: censo, facultad y programa
+    // ========================================================
+    public List<EleccionResponseDTO> listarAbiertasParaVotante(String documento) {
+        // Buscar el votante
+        Votante votante = votanteRepo.findByDocumento(documento)
+                .orElseThrow(() -> new RuntimeException("Votante no encontrado con documento: " + documento));
+
+        System.out.println("[DEBUG] Votante encontrado: ID=" + votante.getId() + ", Documento=" + documento);
+        System.out.println("[DEBUG] Facultad del votante: "
+                + (votante.getFacultad() != null ? votante.getFacultad().getId() : "NULL"));
+        System.out.println("[DEBUG] Programa del votante: "
+                + (votante.getPrograma() != null ? votante.getPrograma().getId() : "NULL"));
+
+        // Obtener todas las elecciones abiertas
+        List<Eleccion> eleccionesAbiertas = repo.findByEstado("ABIERTO");
+        System.out.println("[DEBUG] Total elecciones ABIERTAS: " + eleccionesAbiertas.size());
+
+        // Filtrar según elegibilidad del votante
+        List<EleccionResponseDTO> resultado = eleccionesAbiertas.stream()
+                .filter(eleccion -> {
+                    System.out.println(
+                            "[DEBUG] Evaluando elección ID=" + eleccion.getId() + " (" + eleccion.getNombre() + ")");
+
+                    // 1. Verificar que el votante esté en el censo de esta elección
+                    // Usar votante.getId() en lugar de documento para evitar problemas con JPA
+                    boolean enCenso = censoRepo.findByVotanteIdAndEleccionId(votante.getId(), eleccion.getId())
+                            .isPresent();
+                    System.out.println("[DEBUG]   - En censo: " + enCenso);
+                    if (!enCenso) {
+                        return false;
+                    }
+
+                    // 2. Verificar restricción de facultad (si la ELECCIÓN tiene restricción)
+                    if (eleccion.getFacultad() != null) {
+                        boolean facultadOk = votante.getFacultad() != null &&
+                                votante.getFacultad().getId().equals(eleccion.getFacultad().getId());
+                        System.out.println("[DEBUG]   - Elección requiere facultad " + eleccion.getFacultad().getId()
+                                + ", votante tiene: "
+                                + (votante.getFacultad() != null ? votante.getFacultad().getId() : "NULL") + " -> "
+                                + facultadOk);
+                        if (!facultadOk) {
+                            return false;
+                        }
+                    } else {
+                        System.out.println("[DEBUG]   - Elección NO tiene restricción de facultad");
+                    }
+
+                    System.out.println("[DEBUG]   => INCLUIDA");
+                    return true;
+                })
+                .map(this::buildDTO)
+                .collect(Collectors.toList());
+
+        System.out.println("[DEBUG] Elecciones filtradas para votante: " + resultado.size());
+        return resultado;
     }
 
     // ========================================================

@@ -136,6 +136,7 @@ public class AuthService {
 
                 votante.setEmailVerificado(true);
                 votante.setTokenVerificacion(null); // Limpiar token
+                votante.setEstado("ACTIVO");
                 votanteRepo.save(votante);
 
                 log.info("Email verificado para: {}", votante.getEmail());

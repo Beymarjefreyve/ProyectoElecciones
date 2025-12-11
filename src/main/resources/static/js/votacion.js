@@ -1,15 +1,27 @@
 let candidatoSeleccionado = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    cargarEleccionesAbiertas();
+    // Intentar cargar elecciones si hay documento del votante
+    const documentoInput = document.getElementById('documentoVotante');
+    if (documentoInput) {
+        documentoInput.addEventListener('blur', cargarEleccionesAbiertas);
+    }
 });
 
 async function cargarEleccionesAbiertas() {
+    const documento = document.getElementById('documentoVotante')?.value?.trim();
+    const select = document.getElementById('selectEleccionVoto');
+
+    if (!documento) {
+        select.innerHTML = '<option value="">Ingrese su documento primero</option>';
+        return;
+    }
+
     try {
-        const elecciones = await api.get('/elecciones/abiertas');
-        const select = document.getElementById('selectEleccionVoto');
+        // Usar el nuevo endpoint que filtra por documento del votante
+        const elecciones = await api.get('/elecciones/abiertas/votante?documento=' + encodeURIComponent(documento));
         if (elecciones.length === 0) {
-            select.innerHTML = '<option value="">No hay elecciones abiertas disponibles</option>';
+            select.innerHTML = '<option value="">No hay elecciones disponibles para usted</option>';
             return;
         }
         select.innerHTML = '<option value="">Seleccione una elección</option>' +
@@ -30,7 +42,7 @@ async function cargarCandidatos() {
     try {
         const candidatos = await api.get(`/elecciones/${eleccionId}/candidatos`);
         const container = document.getElementById('candidatosContainer');
-        
+
         if (candidatos.length === 0) {
             container.innerHTML = '<div class="col-12 text-center"><p>No hay candidatos inscritos en esta elección</p></div>';
             document.getElementById('cardCandidatos').style.display = 'block';
@@ -65,7 +77,7 @@ function seleccionarCandidato(candidatoId, element) {
         card.classList.remove('border-primary', 'border-3');
         card.style.backgroundColor = '';
     });
-    
+
     // Seleccionar nuevo candidato
     element.classList.add('border-primary', 'border-3');
     element.style.backgroundColor = '#e7f3ff';
@@ -91,15 +103,15 @@ async function votar() {
             candidatoId: candidatoSeleccionado,
             documento: documento
         });
-        
+
         showAlert('¡Voto registrado correctamente!', 'success');
-        
+
         // Limpiar formulario
         document.getElementById('selectEleccionVoto').value = '';
         document.getElementById('documentoVotante').value = '';
         document.getElementById('cardCandidatos').style.display = 'none';
         candidatoSeleccionado = null;
-        
+
         // Recargar elecciones
         cargarEleccionesAbiertas();
     } catch (error) {

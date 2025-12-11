@@ -11,8 +11,12 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Long> 
     List<Inscripcion> findByEleccionId(Long eleccionId);
 
     boolean existsByCandidatoIdAndEleccionId(Long candidatoId, Long eleccionId);
-    
+
     boolean existsByNumeroAndEleccionId(Integer numero, Long eleccionId);
-    
+
     Optional<Inscripcion> findByNumeroAndEleccionId(Integer numero, Long eleccionId);
+
+    // Buscar inscripción por candidato, elección y estado (para validación de
+    // votación)
+    Optional<Inscripcion> findByCandidatoIdAndEleccionIdAndEstado(Long candidatoId, Long eleccionId, String estado);
 }

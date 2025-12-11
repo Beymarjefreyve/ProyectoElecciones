@@ -238,14 +238,20 @@
 
         async function cargarEleccionesAbiertas() {
             const container = document.getElementById('listaElecciones');
-            console.log('[Votacion] Cargando elecciones abiertas...');
+            console.log('[Votacion] Cargando elecciones abiertas para:', usuario?.documento);
+
+            if (!usuario?.documento) {
+                container.innerHTML = '<div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-2"></i>No se pudo obtener tu documento. Por favor inicia sesión nuevamente.</div>';
+                return;
+            }
 
             try {
-                const elecciones = await api.get('/elecciones/abiertas');
+                // Usar el nuevo endpoint que filtra por documento del votante
+                const elecciones = await api.get('/elecciones/abiertas/votante?documento=' + encodeURIComponent(usuario.documento));
                 console.log('[Votacion] Elecciones recibidas:', elecciones);
 
                 if (!elecciones || elecciones.length === 0) {
-                    container.innerHTML = '<div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>No hay elecciones abiertas en este momento. Vuelve mas tarde.</div>';
+                    container.innerHTML = '<div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>No hay elecciones disponibles para ti en este momento. Esto puede deberse a que no estás habilitado en el censo de ninguna elección activa, o ya votaste en todas.</div>';
                     return;
                 }
 
@@ -376,24 +382,24 @@
             container.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert">' + msg + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
         }
     </script>
-<!-- Modal de Confirmación Global -->
-<div class="modal fade" id="confirmModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirmar acción</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="confirmMessage">
-                ¿Está seguro?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-danger" id="confirmYes">Aceptar</button>
+    <!-- Modal de Confirmación Global -->
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar acción</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="confirmMessage">
+                    ¿Está seguro?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmYes">Aceptar</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 </body>
 
 </html>

@@ -40,6 +40,10 @@ public class Votante {
     @JoinColumn(name = "facultad_id")
     private Facultad facultad;
 
+    @ManyToOne
+    @JoinColumn(name = "programa_id")
+    private Programa programa;
+
     @Column(name = "estado", length = 20)
     private String estado;
 }

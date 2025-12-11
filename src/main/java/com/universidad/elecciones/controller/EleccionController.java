@@ -19,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EleccionController {
 
-	@Autowired
+    @Autowired
     EleccionService service;
 
     // ===============================================
@@ -44,6 +44,15 @@ public class EleccionController {
     @GetMapping("/abiertas")
     public List<EleccionResponseDTO> listarAbiertas() {
         return service.listarAbiertas();
+    }
+
+    // ===============================================
+    // GET - LISTAR ELECCIONES ABIERTAS PARA UN VOTANTE
+    // Filtra por censo, facultad y programa del votante
+    // ===============================================
+    @GetMapping("/abiertas/votante")
+    public List<EleccionResponseDTO> listarAbiertasParaVotante(@RequestParam String documento) {
+        return service.listarAbiertasParaVotante(documento);
     }
 
     // ===============================================
@@ -112,8 +121,7 @@ public class EleccionController {
     @PatchMapping("/{id}/estado")
     public EleccionResponseDTO cambiarEstado(
             @PathVariable Long id,
-            @RequestParam String estado
-    ) {
+            @RequestParam String estado) {
         return service.cambiarEstado(id, estado);
     }
 
