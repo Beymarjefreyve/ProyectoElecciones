@@ -58,50 +58,12 @@ La seguridad del sistema se basa en un modelo **Stateless** (sin estado) utiliza
 3.  Cada petición subsiguiente debe incluir este token en el encabezado `Authorization: Bearer <token>`.
 4.  El filtro `JwtAuthenticationFilter` intercepta cada petición para validar la firma y vigencia del token antes de permitir el acceso al recurso protegido.
 
-## 4. Guía de Instalación y Despliegue
-
-### 4.1. Requisitos del Sistema
-*   **Java JDK 17** instalado y configurado en el `PATH` del sistema.
-*   **Apache Maven 3.8+** (opcional si se utiliza el wrapper `mvnw` incluido).
-*   **Servidor de Base de Datos PostgreSQL** en ejecución.
-
-### 4.2. Configuración del Entorno
-1.  Clonar el repositorio del proyecto.
-2.  Crear una base de datos PostgreSQL vacía (por defecto: `bd_pruebas`).
-3.  Configurar las credenciales de conexión en el archivo `src/main/resources/application.properties`:
-
-    ```properties
-    spring.datasource.url=jdbc:postgresql://localhost:5432/bd_pruebas
-    spring.datasource.username=USUARIO_DB
-    spring.datasource.password=CONTRASEÑA_DB
-    ```
-
-### 4.3. Compilación y Ejecución
-Para compilar el proyecto y descargar las dependencias, ejecute el siguiente comando en la terminal:
-
-```bash
-# Entornos Windows
-./mvnw clean install
-
-# Entornos Linux/Mac
-./mvnw clean install
-```
-
-Para iniciar la aplicación:
-
-```bash
-./mvnw spring-boot:run
-```
-
-El servidor iniciará en el puerto **8080** (http://localhost:8080).
-
-## 5. Documentación de la API
+## 4. Documentación de la API
 
 El proyecto incluye documentación interactiva generada con la especificación OpenAPI 3.0. Esta documentación permite visualizar todos los endpoints disponibles y sus contratos de datos (Request/Response).
 
 **Acceso a Swagger UI:**
 [http://localhost:8080/docs/swagger-ui.html](http://localhost:8080/docs/swagger-ui.html)
 
----
-*Documentación generada para propósitos académicos y de desarrollo.*
+
 
