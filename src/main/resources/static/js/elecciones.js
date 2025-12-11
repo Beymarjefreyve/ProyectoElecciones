@@ -21,7 +21,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     cargarCatalogos();
     cargarElecciones();
+
+    // 🔹 Cuando cambie la facultad, actualizar programas
+    const facultadSelect = document.getElementById('eleccionFacultadId');
+    if (facultadSelect) {
+        facultadSelect.addEventListener('change', () => {
+            // limpiar programa seleccionado
+            const programaSelect = document.getElementById('eleccionProgramaId');
+            if (programaSelect) {
+                programaSelect.value = '';
+            }
+            filtrarProgramasPorFacultad();
+        });
+    }
 });
+
 
 /**
  * Cargar catalogos para los selects
@@ -66,6 +80,43 @@ function llenarSelect(selectId, items, placeholder) {
 
     select.innerHTML = `<option value="">${placeholder}</option>` + options;
 }
+
+async function filtrarProgramasPorFacultad() {
+    const facultadSelect = document.getElementById('eleccionFacultadId');
+    const programaSelect = document.getElementById('eleccionProgramaId');
+
+    if (!facultadSelect || !programaSelect) return;
+
+    const facultadId = facultadSelect.value;
+
+    // Si no hay facultad seleccionada → mostrar todos los programas
+    if (!facultadId) {
+        try {
+            const programas = await api.get('/catalogos/programas');
+            llenarSelect('eleccionProgramaId', programas, 'Todos los programas');
+        } catch (error) {
+            console.error('Error cargando todos los programas:', error);
+            programaSelect.innerHTML = '<option value="">Error al cargar programas</option>';
+        }
+        return;
+    }
+
+    // Si hay facultad → traer programas de esa facultad
+    try {
+        const programas = await api.get('/catalogos/programas/por-facultad?facultadId=' + facultadId);
+
+        if (!programas || programas.length === 0) {
+            programaSelect.innerHTML = '<option value="">No hay programas para esta facultad</option>';
+            return;
+        }
+
+        llenarSelect('eleccionProgramaId', programas, 'Seleccione programa');
+    } catch (error) {
+        console.error('Error cargando programas por facultad:', error);
+        programaSelect.innerHTML = '<option value="">Error al cargar programas</option>';
+    }
+}
+
 
 /**
  * Cargar listado de elecciones

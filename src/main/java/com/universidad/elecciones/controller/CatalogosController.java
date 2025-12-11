@@ -16,16 +16,16 @@ import java.util.List;
 @RequestMapping("/catalogos")
 @RequiredArgsConstructor
 public class CatalogosController {
-	@Autowired
-   FacultadService facultadService;
-	@Autowired
-   ProgramaService programaService;
-	@Autowired
-   SedeService sedeService;
-	@Autowired
-   TipoEleccionService tipoEleccionService;
-	@Autowired
-   TipoService tipoService;
+    @Autowired
+    FacultadService facultadService;
+    @Autowired
+    ProgramaService programaService;
+    @Autowired
+    SedeService sedeService;
+    @Autowired
+    TipoEleccionService tipoEleccionService;
+    @Autowired
+    TipoService tipoService;
 
     // ===============================================
     // FACULTADES
@@ -85,6 +85,14 @@ public class CatalogosController {
     public ResponseEntity<Void> eliminarPrograma(@PathVariable Long id) {
         programaService.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ===============================================
+    // PROGRAMAS por Facultad (nuevo)
+    // ===============================================
+    @GetMapping("/programas/por-facultad")
+    public List<ProgramaDTO> listarProgramasPorFacultad(@RequestParam Long facultadId) {
+        return programaService.listarPorFacultad(facultadId);
     }
 
     // ===============================================
@@ -167,7 +175,8 @@ public class CatalogosController {
     }
 
     @PutMapping("/tipos-eleccion/{id}")
-    public TipoEleccionResponseDTO actualizarTipoEleccion(@PathVariable Long id, @RequestBody TipoEleccionRequestDTO dto) {
+    public TipoEleccionResponseDTO actualizarTipoEleccion(@PathVariable Long id,
+            @RequestBody TipoEleccionRequestDTO dto) {
         return tipoEleccionService.actualizar(id, dto);
     }
 
@@ -177,9 +186,4 @@ public class CatalogosController {
         return ResponseEntity.noContent().build();
     }
 
-    
-
-  
-
- 
 }

@@ -18,4 +18,10 @@ public interface VotanteRepository extends JpaRepository<Votante, Long> {
     boolean existsByEmail(String email);
 
     List<Votante> findByFacultadId(Long facultadId);
+
+    // Buscar votantes por documento o nombre (contiene texto)
+    List<Votante> findByDocumentoContainingIgnoreCaseOrNombreContainingIgnoreCase(String documento, String nombre);
+
+    // Buscar votantes por facultad y rol
+    List<Votante> findByFacultadIdAndRol(Long facultadId, String rol);
 }

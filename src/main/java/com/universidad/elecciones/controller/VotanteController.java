@@ -56,6 +56,25 @@ public class VotanteController {
     }
 
     // ===============================================
+    // GET - BUSCAR VOTANTES POR TEXTO (documento o nombre)
+    // Con filtro opcional por facultad
+    // ===============================================
+    @GetMapping("/buscar")
+    public List<VotanteResponseDTO> buscarPorTexto(
+            @RequestParam String texto,
+            @RequestParam(required = false) Long facultadId) {
+        return service.buscarPorTextoYFacultad(texto, facultadId);
+    }
+
+    // ===============================================
+    // GET - LISTAR VOTANTES POR FACULTAD
+    // ===============================================
+    @GetMapping("/por-facultad/{facultadId}")
+    public List<VotanteResponseDTO> listarPorFacultad(@PathVariable Long facultadId) {
+        return service.listarPorFacultad(facultadId);
+    }
+
+    // ===============================================
     // POST - REGISTRAR VOTANTE
     // ===============================================
     @PostMapping

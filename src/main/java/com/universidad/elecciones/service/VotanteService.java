@@ -175,6 +175,46 @@ public class VotanteService {
     }
 
     // ===============================================
+    // BUSCAR VOTANTES POR TEXTO (documento o nombre)
+    // ===============================================
+    public List<VotanteResponseDTO> buscarPorTexto(String texto) {
+        return buscarPorTextoYFacultad(texto, null);
+    }
+
+    // ===============================================
+    // BUSCAR VOTANTES POR TEXTO Y FACULTAD (opcional)
+    // ===============================================
+    public List<VotanteResponseDTO> buscarPorTextoYFacultad(String texto, Long facultadId) {
+        if (texto == null || texto.trim().isEmpty()) {
+            return List.of();
+        }
+
+        return repo.findByDocumentoContainingIgnoreCaseOrNombreContainingIgnoreCase(texto.trim(), texto.trim())
+                .stream()
+                .filter(v -> !"ADMINISTRATIVO".equals(v.getRol()) && !"ADMIN".equals(v.getRol()))
+                .filter(v -> facultadId == null
+                        || (v.getFacultad() != null && v.getFacultad().getId().equals(facultadId)))
+                .limit(20) // Limitar resultados para rendimiento
+                .map(this::buildDTO)
+                .collect(Collectors.toList());
+    }
+
+    // ===============================================
+    // LISTAR VOTANTES POR FACULTAD (solo estudiantes)
+    // ===============================================
+    public List<VotanteResponseDTO> listarPorFacultad(Long facultadId) {
+        if (facultadId == null) {
+            return List.of();
+        }
+
+        return repo.findByFacultadId(facultadId)
+                .stream()
+                .filter(v -> !"ADMINISTRATIVO".equals(v.getRol()) && !"ADMIN".equals(v.getRol()))
+                .map(this::buildDTO)
+                .collect(Collectors.toList());
+    }
+
+    // ===============================================
     // MÉTODOS PRIVADOS AUXILIARES
     // ===============================================
 

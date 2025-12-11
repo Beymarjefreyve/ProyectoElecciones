@@ -19,13 +19,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProgramaService {
 
-	@Autowired
+    @Autowired
     private final ProgramaRepository repo;
-	@Autowired
+    @Autowired
     private final FacultadRepository facultadRepo;
-	@Autowired
+    @Autowired
     private final EleccionRepository eleccionRepo;
-	
+
     // ===============================================
     // LISTAR PROGRAMAS
     // ===============================================
@@ -37,18 +37,31 @@ public class ProgramaService {
     }
 
     // ===============================================
+    // LISTAR PROGRAMAS por Facultad
+    // ===============================================
+    public List<ProgramaDTO> listarPorFacultad(Long facultadId) {
+        return repo.findByFacultadId(facultadId)
+                .stream()
+                .map(p -> new ProgramaDTO(
+                        p.getId(),
+                        p.getNombre(),
+                        p.getFacultad().getId()))
+                .collect(Collectors.toList());
+    }
+
+    // ===============================================
     // CREAR PROGRAMA
     // ===============================================
     public ProgramaDTO crear(ProgramaRequestDTO dto) {
         // Validar que la facultad existe
         var facultad = facultadRepo.findById(dto.getFacultadId())
                 .orElseThrow(() -> new RuntimeException("Facultad no encontrada"));
-        
+
         Programa programa = Programa.builder()
                 .nombre(dto.getNombre())
                 .facultad(facultad)
                 .build();
-        
+
         Programa saved = repo.save(programa);
         return toDTO(saved);
     }
@@ -58,16 +71,16 @@ public class ProgramaService {
     // ===============================================
     public ProgramaDTO actualizar(Long id, ProgramaRequestDTO dto) {
         Programa programa = buscarPorIdEntity(id);
-        
+
         // Validar que la facultad existe si está cambiando
         if (!programa.getFacultad().getId().equals(dto.getFacultadId())) {
             var facultad = facultadRepo.findById(dto.getFacultadId())
                     .orElseThrow(() -> new RuntimeException("Facultad no encontrada"));
             programa.setFacultad(facultad);
         }
-        
+
         programa.setNombre(dto.getNombre());
-        
+
         Programa updated = repo.save(programa);
         return toDTO(updated);
     }
@@ -77,13 +90,12 @@ public class ProgramaService {
     // ===============================================
     public void eliminar(Long id) {
         Programa programa = buscarPorIdEntity(id);
-        
+
         // Validar integridad referencial: verificar si está en elecciones o solicitudes
         if (!eleccionRepo.findByProgramaId(id).isEmpty()) {
             throw new RuntimeException("No se puede eliminar el programa porque está asociado a elecciones");
         }
-        
-        
+
         repo.delete(programa);
     }
 
@@ -98,7 +110,7 @@ public class ProgramaService {
     // ===============================================
     // MÉTODOS PRIVADOS AUXILIARES
     // ===============================================
-    
+
     private Programa buscarPorIdEntity(Long id) {
         return repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Programa no encontrado"));
