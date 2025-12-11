@@ -5,6 +5,7 @@ import com.universidad.elecciones.dto.FacultadRequestDTO;
 import com.universidad.elecciones.entity.Facultad;
 import com.universidad.elecciones.repository.FacultadRepository;
 import com.universidad.elecciones.repository.ProgramaRepository;
+import com.universidad.elecciones.repository.VotanteRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,9 +19,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FacultadService {
 
-	@Autowired
+    @Autowired
+    private final VotanteRepository votanteRepo;
+    @Autowired
     private final FacultadRepository repo;
-	@Autowired
+    @Autowired
     private final ProgramaRepository programaRepo;
 
     // ===============================================
@@ -40,7 +43,7 @@ public class FacultadService {
         Facultad facultad = Facultad.builder()
                 .nombre(dto.getNombre())
                 .build();
-        
+
         Facultad saved = repo.save(facultad);
         return toDTO(saved);
     }
@@ -51,7 +54,7 @@ public class FacultadService {
     public FacultadDTO actualizar(Long id, FacultadRequestDTO dto) {
         Facultad facultad = buscarPorIdEntity(id);
         facultad.setNombre(dto.getNombre());
-        
+
         Facultad updated = repo.save(facultad);
         return toDTO(updated);
     }
@@ -61,12 +64,17 @@ public class FacultadService {
     // ===============================================
     public void eliminar(Long id) {
         Facultad facultad = buscarPorIdEntity(id);
-        
+
         // Validar integridad referencial: verificar si tiene programas
         if (!programaRepo.findByFacultadId(id).isEmpty()) {
             throw new RuntimeException("No se puede eliminar la facultad porque tiene programas asociados");
         }
-        
+
+        // Validar integridad referencial: verificar si tiene votantes
+        if (!votanteRepo.findByFacultadId(id).isEmpty()) {
+            throw new RuntimeException("No se puede eliminar la facultad porque tiene votantes asociados.");
+        }
+
         repo.delete(facultad);
     }
 
@@ -81,7 +89,7 @@ public class FacultadService {
     // ===============================================
     // MÉTODOS PRIVADOS AUXILIARES
     // ===============================================
-    
+
     private Facultad buscarPorIdEntity(Long id) {
         return repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Facultad no encontrada"));
