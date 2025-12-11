@@ -26,8 +26,6 @@ public class CatalogosController {
    TipoEleccionService tipoEleccionService;
 	@Autowired
    TipoService tipoService;
-	@Autowired
-   TipoSolicitudService tipoSolicitudService;
 
     // ===============================================
     // FACULTADES
@@ -179,33 +177,9 @@ public class CatalogosController {
         return ResponseEntity.noContent().build();
     }
 
-    // ===============================================
-    // TIPOS DE SOLICITUD
-    // ===============================================
-    @GetMapping("/tipos-solicitud")
-    public List<TipoSolicitudResponseDTO> listarTiposSolicitud() {
-        return tipoSolicitudService.listar();
-    }
+    
 
-    @GetMapping("/tipos-solicitud/{id}")
-    public TipoSolicitudResponseDTO buscarTipoSolicitudPorId(@PathVariable Long id) {
-        return tipoSolicitudService.buscarPorId(id);
-    }
+  
 
-    @PostMapping("/tipos-solicitud")
-    public ResponseEntity<TipoSolicitudResponseDTO> crearTipoSolicitud(@RequestBody TipoSolicitudRequestDTO dto) {
-        TipoSolicitudResponseDTO response = tipoSolicitudService.crear(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @PutMapping("/tipos-solicitud/{id}")
-    public TipoSolicitudResponseDTO actualizarTipoSolicitud(@PathVariable Long id, @RequestBody TipoSolicitudRequestDTO dto) {
-        return tipoSolicitudService.actualizar(id, dto);
-    }
-
-    @DeleteMapping("/tipos-solicitud/{id}")
-    public ResponseEntity<Void> eliminarTipoSolicitud(@PathVariable Long id) {
-        tipoSolicitudService.eliminar(id);
-        return ResponseEntity.noContent().build();
-    }
+ 
 }

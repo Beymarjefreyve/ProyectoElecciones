@@ -1,4 +1,4 @@
-/**
+	/**
  * layout.js - Sistema Centralizado de Layout y Control de Acceso (RBAC)
  * 
  * ÚNICA fuente de verdad para:
@@ -35,14 +35,12 @@ const RUTAS = {
         '/inscripciones.html',
         '/votantes.html',
         '/censo.html',
-        '/solicitudes.html',
         '/resultados.html',
         '/catalogos/facultades.html',
         '/catalogos/programas.html',
         '/catalogos/sedes.html',
         '/catalogos/tipos.html',
-        '/catalogos/tipos-eleccion.html',
-        '/catalogos/tipos-solicitud.html'
+        '/catalogos/tipos-eleccion.html'
     ],
     ESTUDIANTE: [
         '/estudiante-votacion.html',
@@ -58,14 +56,12 @@ const MENU_ITEMS = [
     { label: 'Sedes', icon: 'bi-geo-alt', href: '/catalogos/sedes.html', roles: ['ADMIN'] },
     { label: 'Tipos', icon: 'bi-tags', href: '/catalogos/tipos.html', roles: ['ADMIN'] },
     { label: 'Tipos Elección', icon: 'bi-ui-radios', href: '/catalogos/tipos-eleccion.html', roles: ['ADMIN'] },
-    { label: 'Tipos Solicitud', icon: 'bi-file-text', href: '/catalogos/tipos-solicitud.html', roles: ['ADMIN'] },
     { label: 'Procesos', icon: 'bi-calendar-event', href: '/procesos.html', roles: ['ADMIN'] },
     { label: 'Elecciones', icon: 'bi-clipboard-check', href: '/elecciones.html', roles: ['ADMIN'] },
     { label: 'Inscripciones', icon: 'bi-person-check', href: '/inscripciones.html', roles: ['ADMIN'] },
     { label: 'Candidatos', icon: 'bi-person-badge', href: '/candidatos.html', roles: ['ADMIN'] },
     { label: 'Votantes', icon: 'bi-people', href: '/votantes.html', roles: ['ADMIN'] },
     { label: 'Censo', icon: 'bi-list-check', href: '/censo.html', roles: ['ADMIN'] },
-    { label: 'Solicitudes', icon: 'bi-envelope-paper', href: '/solicitudes.html', roles: ['ADMIN'] },
     { label: 'Resultados', icon: 'bi-bar-chart', href: '/resultados.html', roles: ['ADMIN'] },
     // ESTUDIANTE - NUNCA visible para admin
     { label: 'Votar', icon: 'bi-check-circle', href: '/estudiante-votacion.html', roles: ['ESTUDIANTE'] }
@@ -165,6 +161,24 @@ function requireEstudiante() {
     }
     return true;
 }
+function mostrarConfirmacion(mensaje, callback) {
+    document.getElementById('confirmMessage').innerHTML = mensaje;
+
+    const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+    modal.show();
+
+    const btnYes = document.getElementById('confirmYes');
+
+    // Limpiar eventos previos
+    btnYes.replaceWith(btnYes.cloneNode(true));
+
+    const btnNuevo = document.getElementById('confirmYes');
+    btnNuevo.addEventListener('click', () => {
+        modal.hide();
+        callback();
+    });
+}
+
 
 // =====================================================
 // 4. GENERACIÓN DE UI

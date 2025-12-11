@@ -25,6 +25,11 @@ async function cargarCandidatos() {
                 <td>${candidato.id}</td>
                 <td>${candidato.documento}</td>
                 <td>${candidato.nombre}</td>
+				
+				
+				
+				
+				
                 <td>${candidato.imagen ? `<img src="${candidato.imagen}" alt="${candidato.nombre}" style="max-width: 50px; max-height: 50px;">` : '-'}</td>
                 <td>
                     <button class="btn btn-sm btn-outline-primary" onclick="editarCandidato(${candidato.id})">
@@ -67,6 +72,11 @@ async function guardarCandidato() {
         showAlert('Documento y nombre son obligatorios', 'warning');
         return;
     }
+	// ⭐ VALIDACIÓN DEL FORMATO DE LA IMAGEN ⭐
+	    if (imagen && !imagen.match(/\.(jpeg|jpg|png|gif|webp)$/i)) {
+	        showAlert('La URL debe ser una imagen válida (jpg, png, gif, webp)', 'warning');
+	        return;
+	    }	
 
     try {
         if (editMode && id) {
@@ -78,19 +88,38 @@ async function guardarCandidato() {
         }
         modalCandidato.hide();
         cargarCandidatos();
-    } catch (error) {
-        showAlert('Error al guardar: ' + error.message, 'danger');
-    }
+		} catch (error) {
+		       // Detecta si el mensaje viene del backend indicando que el documento ya existe
+		       if (error.message && error.message.includes('Ya existe un candidato')) {
+		           showAlert('El documento ya está registrado', 'warning');
+		       } else {
+		           showAlert('Error al guardar: ' + error.message, 'danger');
+		       }
+		   }
 }
 
-async function eliminarCandidato(id, nombre) {
-    if (!confirm(`¿Está seguro de eliminar el candidato "${nombre}"?`)) return;
-    try {
-        await api.delete(`/candidatos/${id}`);
-        showAlert('Candidato eliminado correctamente', 'success');
-        cargarCandidatos();
-    } catch (error) {
-        showAlert('Error al eliminar: ' + error.message, 'danger');
-    }
+
+async function eliminarCandidato(id) {
+
+    mostrarConfirmacion(
+        '¿Está seguro de eliminar este candidato?',
+        async () => {
+            try {
+                const response = await fetch(`/candidatos/${id}`, { method: 'DELETE' });
+
+                if (response.ok) {
+                    showAlert('Candidato eliminado correctamente', 'success');
+                    cargarCandidatos();
+                } else {
+                    showAlert('Error al eliminar, el candidado está en un proceso electoral', 'danger');
+                }
+
+            } catch (error) {
+                showAlert('Error de conexión', 'danger');
+            }
+        }
+    );
 }
+
+	
 

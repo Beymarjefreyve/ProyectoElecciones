@@ -67,13 +67,18 @@ async function guardarSede() {
 }
 
 async function eliminarSede(id, nombre) {
-    if (!confirm(`¿Está seguro de eliminar la sede "${nombre}"?`)) return;
-    try {
-        await api.delete(`/catalogos/sedes/${id}`);
-        showAlert('Sede eliminada correctamente', 'success');
-        cargarSedes();
-    } catch (error) {
-        showAlert('Error al eliminar: ' + error.message, 'danger');
-    }
+
+    mostrarConfirmacion(
+        `¿Está seguro de eliminar la sede "${nombre}"?`,
+        async () => {
+            try {
+                await api.delete(`/catalogos/sedes/${id}`);
+                showAlert('Sede eliminada correctamente', 'success');
+                cargarSedes();
+            } catch (error) {
+                showAlert('Error al eliminar: ' + error.message, 'danger');
+            }
+        }
+    );
 }
 

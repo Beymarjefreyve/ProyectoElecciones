@@ -67,13 +67,20 @@ async function guardarTipo() {
 }
 
 async function eliminarTipo(id, nombre) {
-    if (!confirm(`¿Está seguro de eliminar el tipo "${nombre}"?`)) return;
-    try {
-        await api.delete(`/catalogos/tipos/${id}`);
-        showAlert('Tipo eliminado correctamente', 'success');
-        cargarTipos();
-    } catch (error) {
-        showAlert('Error al eliminar: ' + error.message, 'danger');
-    }
+
+    mostrarConfirmacion(
+        `¿Está seguro de eliminar el tipo <b>"${nombre}"</b>?`,
+        async () => {
+            try {
+                await api.delete(`/catalogos/tipos/${id}`);
+                showAlert('Tipo eliminado correctamente', 'success');
+                cargarTipos();
+            } catch (error) {
+                showAlert('Error al eliminar: ' + error.message, 'danger');
+            }
+        }
+    );
 }
+
+
 

@@ -261,29 +261,49 @@ async function guardarEleccion() {
  * Eliminar eleccion
  */
 async function eliminarEleccion(id, nombre) {
-    if (!confirm('Esta seguro de eliminar la eleccion "' + nombre + '"?')) return;
 
-    console.log('[Elecciones] Eliminando ID:', id);
+    mostrarConfirmacion(
+        `¿Está seguro de eliminar la elección <b>"${nombre}"</b>?`,
+        async () => {
 
-    try {
-        await api.delete('/elecciones/' + id);
-        console.log('[Elecciones] DELETE exitoso para ID:', id);
-        showAlert('Eleccion eliminada correctamente', 'success');
+            try {
+                await api.delete('/elecciones/' + id);
+                showAlert('Elección eliminada correctamente', 'success');
 
-        // IMPORTANTE: Recargar lista inmediatamente
-        await cargarElecciones();
+                // Recargar tabla
+                await cargarElecciones();
 
-        // Verificacion: el ID ya no debe estar en la tabla
-        const fila = document.querySelector('tr[data-id="' + id + '"]');
-        if (fila) {
-            console.warn('[Elecciones] ADVERTENCIA: La fila sigue visible, eliminandola manualmente');
-            fila.remove();
+                // Si por error sigue en el DOM, eliminarla manualmente
+                const fila = document.querySelector('tr[data-id="' + id + '"]');
+                if (fila) fila.remove();
+
+            } catch (error) {
+                console.error('[Elecciones] Error al eliminar:', error);
+
+                // Obtener mensaje real del backend
+                let msg = error.message || '';
+                if (error.response && error.response.data) {
+                    msg = error.response.data.message || JSON.stringify(error.response.data);
+                }
+
+                // Casos especiales controlados
+                if (msg.includes('foreign key') || msg.includes('censo')) {
+                    showAlert('No se puede eliminar la votación porque tiene censos asociados.', 'warning');
+                }
+                else if (msg.includes('inscripcion')) {
+                    showAlert('No se puede eliminar la votación porque tiene inscripciones asociadas.', 'warning');
+                }
+                else {
+                    showAlert('Error al eliminar la elección: ' + msg, 'danger');
+                }
+            }
         }
-    } catch (error) {
-        console.error('[Elecciones] Error al eliminar:', error);
-        showAlert('Error al eliminar: ' + error.message, 'danger');
-    }
+    );
 }
+
+
+
+
 
 /**
  * Abrir votacion - cambia estado de ACTIVA a ABIERTO

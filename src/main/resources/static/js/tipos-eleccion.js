@@ -67,13 +67,19 @@ async function guardarTipoEleccion() {
 }
 
 async function eliminarTipoEleccion(id, nombre) {
-    if (!confirm(`¿Está seguro de eliminar el tipo de elección "${nombre}"?`)) return;
-    try {
-        await api.delete(`/catalogos/tipos-eleccion/${id}`);
-        showAlert('Tipo de elección eliminado correctamente', 'success');
-        cargarTiposEleccion();
-    } catch (error) {
-        showAlert('Error al eliminar: ' + error.message, 'danger');
-    }
+
+    mostrarConfirmacion(
+        `¿Está seguro de eliminar el tipo de elección <b>"${nombre}"</b>?`,
+        async () => {
+            try {
+                await api.delete(`/catalogos/tipos-eleccion/${id}`);
+                showAlert('Tipo de elección eliminado correctamente', 'success');
+                cargarTiposEleccion();
+            } catch (error) {
+                showAlert('Error al eliminar: ' + error.message, 'danger');
+            }
+        }
+    );
 }
+
 

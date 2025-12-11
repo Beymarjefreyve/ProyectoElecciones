@@ -33,13 +33,12 @@
                                 <th>Nombre</th>
                                 <th>Fecha Inicio</th>
                                 <th>Fecha Fin</th>
-                                <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="procesosTable">
                             <tr>
-                                <td colspan="6" class="text-center text-muted">Cargando...</td>
+                                <td colspan="5" class="text-center text-muted">Cargando...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -72,13 +71,6 @@
                                 <input type="datetime-local" class="form-control" id="procesoFechaFin" required>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="procesoEstado" class="form-label">Estado</label>
-                            <select class="form-select" id="procesoEstado">
-                                <option value="ACTIVO">Activo</option>
-                                <option value="INACTIVO">Inactivo</option>
-                            </select>
-                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -94,7 +86,29 @@
     <script src="/js/layout.js"></script>
     <script src="/js/auth.js"></script>
     <script src="/js/procesos.js"></script>
-    <script>document.addEventListener('DOMContentLoaded', () => { if (!requireAdmin()) return; });</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!requireAdmin()) return;
+        });
+    </script>
+<!-- Modal de Confirmación Global -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar acción</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="confirmMessage">
+                ¿Está seguro?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmYes">Aceptar</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 
 </html>

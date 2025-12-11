@@ -6,7 +6,6 @@ import com.universidad.elecciones.entity.Programa;
 import com.universidad.elecciones.repository.EleccionRepository;
 import com.universidad.elecciones.repository.FacultadRepository;
 import com.universidad.elecciones.repository.ProgramaRepository;
-import com.universidad.elecciones.repository.SolicitudRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,9 +25,7 @@ public class ProgramaService {
     private final FacultadRepository facultadRepo;
 	@Autowired
     private final EleccionRepository eleccionRepo;
-	@Autowired
-    private final SolicitudRepository solicitudRepo;
-
+	
     // ===============================================
     // LISTAR PROGRAMAS
     // ===============================================
@@ -86,9 +83,6 @@ public class ProgramaService {
             throw new RuntimeException("No se puede eliminar el programa porque está asociado a elecciones");
         }
         
-        if (!solicitudRepo.findByProgramaId(id).isEmpty()) {
-            throw new RuntimeException("No se puede eliminar el programa porque está asociado a solicitudes");
-        }
         
         repo.delete(programa);
     }
