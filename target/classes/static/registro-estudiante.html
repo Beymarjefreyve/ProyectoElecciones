@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Estudiante - Sistema de Elecciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 2rem 0;
+        }
+
+        .register-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 3rem;
+            max-width: 500px;
+            width: 90%;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo-icon {
+            font-size: 3rem;
+            color: #11998e;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e0e0e0;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #11998e;
+            box-shadow: 0 0 0 0.2rem rgba(17, 153, 142, 0.25);
+        }
+
+        .btn-register {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem;
+            font-weight: 600;
+            width: 100%;
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4);
+            color: white;
+        }
+
+        .alert {
+            border-radius: 12px;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #666;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            color: #11998e;
+        }
+
+        .form-text {
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="register-container">
+        <div class="logo-icon">
+            <i class="bi bi-person-plus-fill"></i>
+        </div>
+        <h1 class="title">Registro de Estudiante</h1>
+        <p class="subtitle">Crea tu cuenta para participar en las elecciones</p>
+
+        <div id="alertContainer"></div>
+
+        <form id="registerForm">
+            <div class="mb-3">
+                <label class="form-label">Nombre Completo *</label>
+                <input type="text" class="form-control" id="nombre" placeholder="Juan Pérez García" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Documento de Identidad *</label>
+                <input type="text" class="form-control" id="documento" placeholder="12345678" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Correo Electrónico *</label>
+                <input type="email" class="form-control" id="email" placeholder="tu.correo@universidad.edu" required>
+                <div class="form-text text-muted">Recibirás un correo de verificación</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Facultad</label>
+                <select class="form-select" id="facultadId">
+                    <option value="">Cargando facultades...</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Contraseña *</label>
+                <input type="password" class="form-control" id="password" placeholder="Mínimo 4 caracteres" required
+                    minlength="4">
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Confirmar Contraseña *</label>
+                <input type="password" class="form-control" id="passwordConfirm" placeholder="Repite tu contraseña"
+                    required>
+            </div>
+
+            <button type="submit" class="btn btn-register" id="btnRegister">
+                <i class="bi bi-check-circle me-2"></i>Crear Cuenta
+            </button>
+        </form>
+
+        <div class="text-center mt-3">
+            <span class="text-muted">¿Ya tienes cuenta?</span>
+            <a href="/login-estudiante.html" class="text-decoration-none" style="color: #11998e;">Inicia sesión</a>
+        </div>
+
+        <a href="/landing.html" class="back-link">
+            <i class="bi bi-arrow-left me-1"></i>Volver al inicio
+        </a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showAlert(message, type) {
+            document.getElementById('alertContainer').innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        async function cargarFacultades() {
+            const select = document.getElementById('facultadId');
+            try {
+                const response = await fetch('/catalogos/facultades', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) throw new Error('Error al cargar facultades');
+
+                const facultades = await response.json();
+
+                select.innerHTML = '<option value="">Selecciona tu facultad (opcional)</option>';
+                facultades.forEach(f => {
+                    const option = document.createElement('option');
+                    option.value = f.id;
+                    option.textContent = f.nombre;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                select.innerHTML = '<option value="">No se pudieron cargar las facultades</option>';
+            }
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+
+            const nombre = document.getElementById('nombre').value.trim();
+            const documento = document.getElementById('documento').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const facultadId = document.getElementById('facultadId').value;
+            const password = document.getElementById('password').value;
+            const passwordConfirm = document.getElementById('passwordConfirm').value;
+            const btn = document.getElementById('btnRegister');
+
+            if (password !== passwordConfirm) {
+                showAlert('Las contraseñas no coinciden', 'danger');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Registrando...';
+
+            try {
+                const response = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        documento: documento,
+                        nombre: nombre,
+                        email: email,
+                        password: password,
+                        facultadId: facultadId ? parseInt(facultadId) : null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('¡Registro exitoso! Revisa tu correo para verificar tu cuenta.', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/verificacion-pendiente.html?email=' + encodeURIComponent(email);
+                    }, 1500);
+                } else {
+                    showAlert(data.mensaje || 'Error en el registro', 'danger');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Crear Cuenta';
+                }
+            } catch (error) {
+                showAlert('Error de conexión. Intenta nuevamente.', 'danger');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Crear Cuenta';
+            }
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', handleRegister);
+        document.addEventListener('DOMContentLoaded', cargarFacultades);
+    </script>
+</body>
+
+</html>

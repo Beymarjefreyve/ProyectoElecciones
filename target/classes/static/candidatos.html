@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidatos - Sistema de Elecciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/custom.css" rel="stylesheet">
+    <style>
+        .candidate-photo {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="navbar-container"></div>
+    <div id="sidebar-container"></div>
+
+    <main>
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+            <h1 class="h2"><i class="bi bi-person-badge me-2"></i>Gestión de Candidatos</h1>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCandidato"
+                onclick="limpiarFormulario()">
+                <i class="bi bi-plus-circle me-1"></i>Nuevo Candidato
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Foto</th>
+                                <th>Documento</th>
+                                <th>Nombre</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="candidatosTable">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Cargando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Candidato -->
+    <div class="modal fade" id="modalCandidato" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCandidatoTitle">Nuevo Candidato</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formCandidato">
+                        <input type="hidden" id="candidatoId">
+                        <div class="mb-3">
+                            <label for="candidatoDocumento" class="form-label">Documento *</label>
+                            <input type="text" class="form-control" id="candidatoDocumento" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="candidatoNombre" class="form-label">Nombre Completo *</label>
+                            <input type="text" class="form-control" id="candidatoNombre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="candidatoImagen" class="form-label">URL de Imagen (opcional)</label>
+                            <input type="url" class="form-control" id="candidatoImagen"
+                                placeholder="https://ejemplo.com/foto.jpg">
+                            <div class="form-text">Ingresa la URL de una imagen</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardarCandidato()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/layout.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!requireAdmin()) return;
+            cargarCandidatos();
+        });
+
+        async function cargarCandidatos() {
+            try {
+                const response = await fetch('/candidatos', { headers: { 'Accept': 'application/json' } });
+                const candidatos = await response.json();
+                const tbody = document.getElementById('candidatosTable');
+
+                if (candidatos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No hay candidatos registrados</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = candidatos.map(c => `
+                    <tr>
+                        <td>${c.id}</td>
+                        <td>${c.imagen ? `<img src="${c.imagen}" class="candidate-photo" alt="Foto" onerror="this.style.display='none'">` : '<i class="bi bi-person-circle fs-3 text-secondary"></i>'}</td>
+                        <td>${c.documento}</td>
+                        <td>${c.nombre}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="editarCandidato(${c.id})"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarCandidato(${c.id})"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error(error);
+                document.getElementById('candidatosTable').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error al cargar</td></tr>';
+            }
+        }
+
+        function limpiarFormulario() {
+            document.getElementById('candidatoId').value = '';
+            document.getElementById('candidatoDocumento').value = '';
+            document.getElementById('candidatoNombre').value = '';
+            document.getElementById('candidatoImagen').value = '';
+            document.getElementById('modalCandidatoTitle').textContent = 'Nuevo Candidato';
+        }
+
+        async function guardarCandidato() {
+            const id = document.getElementById('candidatoId').value;
+            const documento = document.getElementById('candidatoDocumento').value.trim();
+            const nombre = document.getElementById('candidatoNombre').value.trim();
+            const imagen = document.getElementById('candidatoImagen').value.trim();
+
+            if (!documento || !nombre) {
+                showAlert('Documento y nombre son obligatorios', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch(id ? `/candidatos/${id}` : '/candidatos', {
+                    method: id ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ documento, nombre, imagen: imagen || null })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    showAlert(error.message || 'Error al guardar candidato', 'danger');
+                    return;
+                }
+
+                bootstrap.Modal.getInstance(
+                    document.getElementById('modalCandidato')
+                ).hide();
+
+                showAlert('Candidato guardado correctamente', 'success');
+                cargarCandidatos();
+
+            } catch (error) {
+                showAlert('Error de conexión con el servidor', 'danger');
+            }
+        }
+
+
+        async function editarCandidato(id) {
+            try {
+                const c = await (await fetch(`/candidatos/${id}`)).json();
+                document.getElementById('candidatoId').value = c.id;
+                document.getElementById('candidatoDocumento').value = c.documento;
+                document.getElementById('candidatoNombre').value = c.nombre;
+                document.getElementById('candidatoImagen').value = c.imagen || '';
+                document.getElementById('modalCandidatoTitle').textContent = 'Editar Candidato';
+                new bootstrap.Modal(document.getElementById('modalCandidato')).show();
+            } catch (error) { alert('Error al cargar candidato'); }
+        }
+
+        async function eliminarCandidato(id) {
+
+            mostrarConfirmacion(
+                '¿Está seguro de eliminar este candidato?',
+                async () => {
+                    try {
+                        const response = await fetch(`/candidatos/${id}`, { method: 'DELETE' });
+
+                        if (response.ok) {
+                            showAlert('Candidato eliminado correctamente', 'success');
+                            cargarCandidatos();
+                        } else {
+                            showAlert('Error al eliminar, el candidado está en un proceso electoral', 'danger');
+                        }
+
+                    } catch (error) {
+                        showAlert('Error de conexión', 'danger');
+                    }
+                }
+            );
+        }
+
+    </script>
+    <!-- Modal de Confirmación Global -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar acción</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="confirmMessage">
+                ¿Está seguro?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmYes">Aceptar</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+</html>
