@@ -2,13 +2,9 @@ package com.universidad.elecciones.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -16,13 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 public class EmailService {
 
     @Autowired
-    private JavaMailSender mailSender;
+    private SendGridEmailService sendGridEmailService;
 
     @Value("${app.base-url:http://localhost:8080}")
     private String baseUrl;
-
-    @Value("${spring.mail.username:}")
-    private String fromEmail;
 
     /**
      * Envía un correo de verificación al usuario
@@ -34,15 +27,10 @@ public class EmailService {
 
             String html = generarHtmlVerificacion(nombre, urlVerificacion);
 
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(email);
-            helper.setSubject("Verifica tu correo - Sistema de Elecciones Universitarias");
-            helper.setText(html, true);
-
-            mailSender.send(mimeMessage);
+            sendGridEmailService.enviarHtml(
+                    email,
+                    "Verifica tu correo - Sistema de Elecciones Universitarias",
+                    html);
 
             log.info("Correo de verificación enviado a: {}", email);
 
@@ -55,27 +43,22 @@ public class EmailService {
      * Envía un correo de confirmación de voto
      */
     public void enviarConfirmacionVoto(String email, String nombre, String eleccionNombre) {
-        if (mailSender == null || fromEmail == null || fromEmail.isEmpty()) {
-            log.warn("Email no configurado. No se envió confirmación de voto a: {}", email);
-            return;
-        }
-
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(email);
-            message.setSubject("Confirmación de Voto - " + eleccionNombre);
-
-            String body = String.format(
-                    "Hola %s,\n\n" +
-                            "Tu voto ha sido registrado exitosamente en la elección: %s\n\n" +
-                            "Gracias por participar en el proceso electoral.\n\n" +
-                            "Saludos,\n" +
-                            "Sistema de Elecciones Universitarias",
+            String html = String.format(
+                    "<div style=\"font-family: Arial, sans-serif; padding: 20px;\">" +
+                            "<h2>Confirmación de Voto</h2>" +
+                            "<p>Hola <strong>%s</strong>,</p>" +
+                            "<p>Tu voto ha sido registrado exitosamente en la elección: <strong>%s</strong></p>" +
+                            "<p>Gracias por participar en el proceso electoral.</p>" +
+                            "<p>Saludos,<br>Sistema de Elecciones Universitarias</p>" +
+                            "</div>",
                     nombre, eleccionNombre);
 
-            message.setText(body);
-            mailSender.send(message);
+            sendGridEmailService.enviarHtml(
+                    email,
+                    "Confirmación de Voto - " + eleccionNombre,
+                    html);
+
             log.info("Confirmación de voto enviada a: {}", email);
 
         } catch (Exception e) {

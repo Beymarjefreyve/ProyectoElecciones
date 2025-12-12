@@ -35,6 +35,7 @@ C:\Users\yefre\OneDrive\Escritorio\ProyectoElecciones\src\main\java\com\universi
 C:\Users\yefre\OneDrive\Escritorio\ProyectoElecciones\src\main\java\com\universidad\elecciones\jwt\JwtAuthenticationFilter.java
 C:\Users\yefre\OneDrive\Escritorio\ProyectoElecciones\src\main\java\com\universidad\elecciones\auth\AuthController.java
 C:\Users\yefre\OneDrive\Escritorio\ProyectoElecciones\src\main\java\com\universidad\elecciones\dto\VotanteResponseDTO.java
+C:\Users\yefre\OneDrive\Escritorio\ProyectoElecciones\src\main\java\com\universidad\elecciones\service\SendGridEmailService.java
 C:\Users\yefre\OneDrive\Escritorio\ProyectoElecciones\src\main\java\com\universidad\elecciones\dto\ConteoResultadosDTO.java
 C:\Users\yefre\OneDrive\Escritorio\ProyectoElecciones\src\main\java\com\universidad\elecciones\service\EleccionService.java
 C:\Users\yefre\OneDrive\Escritorio\ProyectoElecciones\src\main\java\com\universidad\elecciones\dto\ProgramaDTO.java

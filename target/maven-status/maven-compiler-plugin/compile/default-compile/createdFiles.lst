@@ -109,6 +109,7 @@ com\universidad\elecciones\repository\EleccionRepository.class
 com\universidad\elecciones\entity\TipoEleccion$TipoEleccionBuilder.class
 com\universidad\elecciones\dto\CensoRequest$CensoRequestBuilder.class
 com\universidad\elecciones\service\ProcesoService.class
+com\universidad\elecciones\service\SendGridEmailService.class
 com\universidad\elecciones\dto\SedeResponseDTO.class
 com\universidad\elecciones\entity\Candidato.class
 com\universidad\elecciones\controller\ProcesoController.class
