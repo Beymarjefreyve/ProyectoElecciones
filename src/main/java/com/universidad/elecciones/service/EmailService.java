@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EmailService {
 
-    @Autowired(required = false)
+    @Autowired
     private JavaMailSender mailSender;
 
     @Value("${app.base-url:http://localhost:8080}")
@@ -26,13 +26,8 @@ public class EmailService {
     /**
      * Envía un correo de verificación al usuario
      */
+    @Async
     public void enviarCorreoVerificacion(String email, String nombre, String token) {
-        if (mailSender == null || fromEmail == null || fromEmail.isEmpty()) {
-            log.warn("Email no configurado. Token de verificación para {}: {}", email, token);
-            log.warn("URL de verificación: {}/verificar?token={}", baseUrl, token);
-            return;
-        }
-
         try {
             String urlVerificacion = baseUrl + "/verificacion-exitosa.html?token=" + token;
 
@@ -44,15 +39,14 @@ public class EmailService {
             helper.setFrom(fromEmail);
             helper.setTo(email);
             helper.setSubject("Verifica tu correo - Sistema de Elecciones Universitarias");
-            helper.setText(html, true); // ← TRUE = HTML
+            helper.setText(html, true);
 
             mailSender.send(mimeMessage);
 
             log.info("Correo de verificación enviado a: {}", email);
 
         } catch (Exception e) {
-            log.error("Error al enviar correo de verificación a {}: {}", email, e.getMessage());
-            log.warn("Token de verificación para {}: {}", email, token);
+            log.error("Error al enviar correo de verificación", e);
         }
     }
 
