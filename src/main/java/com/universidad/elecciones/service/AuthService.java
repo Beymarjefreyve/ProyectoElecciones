@@ -26,7 +26,7 @@ public class AuthService {
         private final FacultadRepository facultadRepo;
 
         @Autowired
-        private final EmailService emailService;
+        private final SendGridEmailService sendGridEmailService;
 
         // ===============================================
         // REGISTRO DE ESTUDIANTE
@@ -95,7 +95,7 @@ public class AuthService {
                 votanteRepo.save(votante);
 
                 // Enviar correo de verificación
-                emailService.enviarCorreoVerificacion(email, nombre, token);
+                sendGridEmailService.enviarCorreoVerificacion(email, nombre, token);
 
                 log.info("Estudiante registrado: {} - Token: {}", email, token);
 
