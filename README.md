@@ -63,7 +63,8 @@ La seguridad del sistema se basa en un modelo **Stateless** (sin estado) utiliza
 El proyecto incluye documentación interactiva generada con la especificación OpenAPI 3.0. Esta documentación permite visualizar todos los endpoints disponibles y sus contratos de datos (Request/Response).
 
 **Acceso a Swagger UI:**
-[http://localhost:8080/docs/swagger-ui.html](http://localhost:8080/docs/swagger-ui.html)
+https://proyectoelecciones-production-532c.up.railway.app/docs/swagger-ui/index.html
+
 
 
 
